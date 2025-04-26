@@ -9,7 +9,7 @@ L = 1e4
 
 alpha_critical = 62.5 #MPa
 R=0.5
-n=2
+n=0.5
 [Mesh]
   file = mesh/mesh_in.e
   uniform_refine = 0
