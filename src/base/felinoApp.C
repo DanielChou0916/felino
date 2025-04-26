@@ -28,6 +28,7 @@ felinoApp::registerAll(Factory & f, ActionFactory & af, Syntax & syntax)
   Registry::registerActionsTo(af, {"felinoApp"});
 
   /* register custom execute flags, action syntax, etc. here */
+  syntax.registerActionSyntax("ADNonconservedAction", "Actions/ADNonconserved/*"); // ✅
 }
 
 void
