@@ -31,8 +31,8 @@ A general-purpose tool for calculating **damaged elastic energy** and **damaged 
 Computes **fatigue energy** using the **mean load method**.
 - Supports three accumulation modes:
   1. `monotonic` — No fatigue accumulation.
-  2. `Fatigue` — Time-step-sensitive energy accumulation based on comparing \( $\bar{\psi}_t$ \) and \( \bar{\psi}_{t-1} \). Requires careful control of \( \Delta t \) to capture cyclic peaks.
-  3. `FatigueCLA` — Cycle-count-based accumulation. Less sensitive to \( \Delta t \), but also less accurate.
+  2. `Fatigue` — Time-step-sensitive energy accumulation based on comparing $\bar{\psi}_t$ and  $\bar{\psi}_{t-1}$. Requires careful control of $\Delta t$ to capture cyclic peaks.
+  3. `FatigueCLA` — Cycle-count-based accumulation. Less sensitive to $\Delta t$, but also less accurate.
 - **Note:** This object only computes fatigue energy. Users must define additional materials to compute the fatigue function.
 
 **Example Usage:**
@@ -62,7 +62,7 @@ Computes **fatigue energy** using the **mean load method**.
 #### 3️⃣ `Actions/ADNonconserved`
 Automates the setup of Kernels for solving the **Allen-Cahn equation**.
 - Use `use_grad_kappa = true` to include spatial gradients of material parameters when they are non-constant.
-- Gradient terms (\( \nabla \kappa \)) are handled via `AuxKernels` and `AuxVariables`.
+- Gradient terms ($\nabla \kappa$) are handled via `AuxKernels` and `AuxVariables`.
 - Automatically detects mesh dimension (e.g., requires `grad_kappa_z` in 3D).
 
 **Example Usage:**
