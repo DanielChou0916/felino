@@ -49,5 +49,6 @@ protected:
   /// accumulation mode
   const std::string _accumulation_mode;
   const VariableValue * _N_cyc_var;
+  const VariableValue * _N_cyc_var_old;
 //
 };

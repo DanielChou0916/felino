@@ -58,9 +58,15 @@ ADComputeFatigueEnergy::ADComputeFatigueEnergy(const InputParameters & parameter
     _accumulation_mode(getParam<std::string>("accumulation_mode"))
 {
   if (parameters.isParamValid("N_cyc_variable"))
+  {
     _N_cyc_var = &coupledValue("N_cyc_variable");
+    _N_cyc_var_old = &coupledValueOld("N_cyc_variable");
+  }
   else
+  {
     _N_cyc_var = nullptr;
+    _N_cyc_var_old = nullptr;
+  }
 }
 void
 ADComputeFatigueEnergy::initQpStatefulProperties()
@@ -121,9 +127,12 @@ ADComputeFatigueEnergy::computeQpProperties()
         mooseError("N_cyc_variable must be provided when using FatigueCLA mode!");
       else
       {
-        //ADReal delta_energy = _bar_psi[_qp] * (*_N_cyc_var)[_qp];
-        //_acc_bar_psi[_qp] = _acc_bar_psi_old[_qp] + delta_energy;
-        _acc_bar_psi[_qp] = _bar_psi[_qp] * (*_N_cyc_var)[_qp];
+        Real delta_N = (*_N_cyc_var)[_qp] - (*_N_cyc_var_old)[_qp];
+        if (delta_N < 0.0)
+          delta_N = 0.0;
+        ADReal delta_energy = _bar_psi[_qp] * delta_N;
+        _acc_bar_psi[_qp] = _acc_bar_psi_old[_qp] + delta_energy;
+        //_acc_bar_psi[_qp] = _bar_psi[_qp] * (*_N_cyc_var)[_qp];
       }
   }
   else
