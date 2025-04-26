@@ -31,7 +31,7 @@ A general-purpose tool for calculating **damaged elastic energy** and **damaged 
 Computes **fatigue energy** using the **mean load method**.
 - Supports three accumulation modes:
   1. `monotonic` — No fatigue accumulation.
-  2. `Fatigue` — Time-step-sensitive energy accumulation based on comparing \( \bar{\psi}_t \) and \( \bar{\psi}_{t-1} \). Requires careful control of \( \Delta t \) to capture cyclic peaks.
+  2. `Fatigue` — Time-step-sensitive energy accumulation based on comparing \( $\bar{\psi}_t$ \) and \( \bar{\psi}_{t-1} \). Requires careful control of \( \Delta t \) to capture cyclic peaks.
   3. `FatigueCLA` — Cycle-count-based accumulation. Less sensitive to \( \Delta t \), but also less accurate.
 - **Note:** This object only computes fatigue energy. Users must define additional materials to compute the fatigue function.
 
