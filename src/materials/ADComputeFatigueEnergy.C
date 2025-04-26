@@ -26,10 +26,7 @@ ADComputeFatigueEnergy::validParams()
       "If true, multiply current energy by degradation function.");
   params.addParam<std::string>("accumulation_mode", "Fatigue", 
     "Choose accumulation mode: 'Monotonic', 'Fatigue', 'FatigueCLA'");
-  params.addParam<MaterialPropertyName>(
-    "N_cyc_name", 
-    "",
-    "Material property name for cycle count in FatigueCLA mode. Leave blank if not used.");
+  params.addCoupledVar("N_cyc_variable", "Optional variable representing current N_cycle");
   return params;
 }
 
@@ -58,9 +55,12 @@ ADComputeFatigueEnergy::ADComputeFatigueEnergy(const InputParameters & parameter
     _n(getADMaterialProperty<Real>("material_constant_n")),
     _R(getADMaterialProperty<Real>("load_ratio")),
     _multiply_by_degradation(getParam<bool>("multiply_by_D")),
-    _accumulation_mode(getParam<std::string>("accumulation_mode")),
-    _N_cyc(getOptionalADMaterialProperty<Real>("N_cyc_name"))
+    _accumulation_mode(getParam<std::string>("accumulation_mode"))
 {
+  if (parameters.isParamValid("N_cyc_variable"))
+    _N_cyc_var = &coupledValue("N_cyc_variable");
+  else
+    _N_cyc_var = nullptr;
 }
 void
 ADComputeFatigueEnergy::initQpStatefulProperties()
@@ -117,13 +117,14 @@ ADComputeFatigueEnergy::computeQpProperties()
   }
   else if (_accumulation_mode == "FatigueCLA")
   {
-    if (!_N_cyc)
-      mooseError("N_cyc_name must be provided when using FatigueCLA mode!");
-    else
-    {
-    ADReal delta_energy = _bar_psi[_qp] * _N_cyc[_qp];
-    _acc_bar_psi[_qp] = _acc_bar_psi_old[_qp] + delta_energy;
-    }
+      if (!_N_cyc_var)
+        mooseError("N_cyc_variable must be provided when using FatigueCLA mode!");
+      else
+      {
+        //ADReal delta_energy = _bar_psi[_qp] * (*_N_cyc_var)[_qp];
+        //_acc_bar_psi[_qp] = _acc_bar_psi_old[_qp] + delta_energy;
+        _acc_bar_psi[_qp] = _bar_psi[_qp] * (*_N_cyc_var)[_qp];
+      }
   }
   else
     mooseError("Unknown accumulation_mode: ", _accumulation_mode);

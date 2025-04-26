@@ -48,6 +48,6 @@ protected:
   const bool _multiply_by_degradation;
   /// accumulation mode
   const std::string _accumulation_mode;
-  const OptionalADMaterialProperty<Real> & _N_cyc;  
+  const VariableValue * _N_cyc_var;
 //
 };
