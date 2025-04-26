@@ -7,7 +7,7 @@ umax = 0.0005
 period = 0.01
 num_cycle = 38000
 end_time = ${fparse period * num_cycle}
-deltat = ${fparse 0.2 * period} 
+deltat = ${fparse 0.5 * period} 
 [GlobalParams]
   displacements = 'disp_x disp_y'
 []
@@ -150,7 +150,8 @@ deltat = ${fparse 0.2 * period}
     type = FunctionDirichletBC
     variable = 'disp_y'
     boundary = 2
-    function = '${umax} * 0.5 * (sin(2 * 3.1415926 * t / ${period}) + 1)'
+    #function = '${umax} * 0.5 * (sin(2 * 3.1415926 * t / ${period}) + 1)'
+    function = '${umax} * 0.5 * (cos(2 * 3.1415926 * t / ${period}) + 1)'
   []
   [yfix]
     type = DirichletBC
@@ -284,7 +285,7 @@ deltat = ${fparse 0.2 * period}
   #[../]
   dt = ${deltat}
   end_time = ${end_time}
-  #num_steps=6
+  num_steps=6
   fixed_point_max_its = 12
   nl_max_its = 16  
   l_max_its = 20  
@@ -298,5 +299,5 @@ deltat = ${fparse 0.2 * period}
   exodus = true
   #perf_graph = true
   csv = true
-  time_step_interval = 50
+  time_step_interval = 1
 []
