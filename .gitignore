@@ -70,13 +70,11 @@ temp_print_trace.*
 *.plugin
 *.outp
 *.patch
-*.txt
 *.bib.bak
 *.out
 *.vtk
 *.vtu
 *.pvtu
-*.zip
 *.pt
 *.net
 .depend
