@@ -9,8 +9,8 @@ InputParameters
 ADComputeFatigueEnergy::validParams()
 {
   InputParameters params = Material::validParams();
-  params.addRequiredParam<std::string>("uncracked_base_name",
-    "The base name used to calculate the original stress");
+  params.addParam<std::string>("uncracked_base_name", "",
+    "Optional prefix for uncracked stress-strain properties. Leave empty if using default names.");
   params.addParam<bool>("finite_strain_model", false, "The model is using finite strain");
   params.addParam<MaterialPropertyName>(
       "D_name", "degradation", "Name of material property for energetic degradation function.");//✅0318
@@ -33,7 +33,7 @@ ADComputeFatigueEnergy::validParams()
 ADComputeFatigueEnergy::ADComputeFatigueEnergy(const InputParameters & parameters)
   : Material(parameters), 
     GuaranteeConsumer(this),
-    _uncracked_base_name(getParam<std::string>("uncracked_base_name") + "_"),
+    _uncracked_base_name(isParamValid("uncracked_base_name") ? getParam<std::string>("uncracked_base_name") + "_" : ""),
     _finite_strain_model(getParam<bool>("finite_strain_model")),
     _strain(
         _finite_strain_model
