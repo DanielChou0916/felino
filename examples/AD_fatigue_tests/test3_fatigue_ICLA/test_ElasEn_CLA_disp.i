@@ -14,7 +14,7 @@ deltat = ${fparse 100 * period}
 [MultiApps]
   [crack]
     type = TransientMultiApp
-    input_files = 'test_CLA_f.i'
+    input_files = 'test_ElasEn_CLA_f.i'
   []
 []
 
@@ -82,7 +82,7 @@ deltat = ${fparse 100 * period}
 []
 
 [Mesh]
-  file = mesh/mesh_in.e
+  file = ../mesh/mesh_in.e
   uniform_refine = 0
   skip_partitioning = true
   construct_side_list_from_node_list=true
@@ -156,7 +156,10 @@ deltat = ${fparse 100 * period}
     type = FunctionDirichletBC
     variable = 'disp_y'
     boundary = 2
-    function = '${umax} * 0.5 * (cos(2 * 3.1415926 * t / ${period}) + 1)'
+    ## Instead of using cosine function for top displacement, fix it as constant
+    ## The energy accumulation is taken by [./current_cycle] block in [Functions]
+    #function = '${umax} * 0.5 * (cos(2 * 3.1415926 * t / ${period}) + 1)'
+    function = '${umax}'
   []
   [yfix]
     type = DirichletBC
@@ -290,7 +293,7 @@ deltat = ${fparse 100 * period}
   #[../]
   dt = ${deltat}
   end_time = ${end_time}
-  #num_steps=6
+  #num_steps=2
   fixed_point_max_its = 12
   nl_max_its = 16  
   l_max_its = 20  
@@ -300,9 +303,9 @@ deltat = ${fparse 100 * period}
 []
 
 [Outputs]
-  file_base=test_fatigue_CLA
+  file_base=elastic_energy_ICLA
   exodus = true
   #perf_graph = true
   csv = true
-  time_step_interval = 2
+  time_step_interval = 5
 []

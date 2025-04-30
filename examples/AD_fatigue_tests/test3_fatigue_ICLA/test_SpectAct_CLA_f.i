@@ -8,10 +8,10 @@ C0 = 2#2.666667
 L = 1e4
 
 alpha_critical = 62.5 #MPa
-R=0.5
-n=0.5
+#R=0.5
+#n=0.5
 [Mesh]
-  file = mesh/mesh_in.e
+  file = ../mesh/mesh_in.e
   uniform_refine = 0
   skip_partitioning = true
   construct_side_list_from_node_list=true
@@ -117,8 +117,10 @@ n=0.5
   [../]
   [./pfbulkmat]
     type = ADGenericConstantMaterial
-    prop_names =  'load_ratio  material_constant_n    alpha_critical'
-    prop_values = '${R}        ${n}                   ${alpha_critical}' 
+    #prop_names =  'load_ratio  material_constant_n    alpha_critical'
+    #prop_values = '${R}        ${n}                   ${alpha_critical}' 
+    prop_names =  'alpha_critical'
+    prop_values = '${alpha_critical}' 
   [../]
   [./public_materials_forPF_model]
     type = ADGenericConstantMaterial
@@ -150,11 +152,12 @@ n=0.5
   [../]
   [./fatigue_variable]
     type = ADComputeFatigueEnergy
+    energy_calculation = spectral_activation
     uncracked_base_name = uncracked
     finite_strain_model = true
     #D_name = #no need to set this if multiply_by_D = false
     multiply_by_D = false
-    accumulation_mode = FatigueCLA
+    accumulation_mode = FatigueICLA
     N_cyc_variable = n_cycle
     acc_bar_psi_name = bar_alpha
     bar_psi_name = current_fatigue

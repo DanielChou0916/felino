@@ -30,7 +30,7 @@ protected:
   const MaterialPropertyName _D_name;// ✅
   const ADMaterialProperty<Real> & _D;// ✅
   /// Accumulation energy type ✅
-  const std::string _type;
+  const std::string _energy_calculation;
   ///II. Outputs from this program:
   /// 1. current energy
   const MaterialPropertyName _bar_psi_name;// ✅
@@ -42,8 +42,8 @@ protected:
   /// Old value of history variable
   const MaterialProperty<Real> & _acc_bar_psi_old;
   /// Other parameters
-  const ADMaterialProperty<Real> & _n;
-  const ADMaterialProperty<Real> & _R;
+  const OptionalADMaterialProperty<Real> & _n;
+  const OptionalADMaterialProperty<Real> & _R;  
   /// multiply by degradation or not
   const bool _multiply_by_degradation;
   /// accumulation mode
