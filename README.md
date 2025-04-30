@@ -28,37 +28,36 @@ A general-purpose tool for calculating **damaged elastic energy** and **damaged 
 ---
 
 #### 2️⃣ `ADComputeFatigueEnergy`
-Computes **fatigue energy** at the current step \( \Psi_t \), along with its accumulated value \( \bar{\alpha}_t \).
+Computes **fatigue energy** at the current step $\Psi_t$, along with its accumulated value $\bar{\alpha}_t$.
 
 - **Three approaches for energy calculation**:
   1. `mean_load`: Default mode.  
-     \( \Psi_t = 2E\epsilon_{\text{max}}^2\left(\frac{1+R}{2}\right)^2\left(\frac{1+R}{2}\right)^n \),
-     where \epsilon_{\text{max}} is the maximum principal strain.  
-     Requires loading ratio \( R \) and exponent \( n \) to be defined in the generic material block.
-  3. `elastic_energy`:  
-     \( \Psi_t = 0.5 \, \boldsymbol{\sigma} : \boldsymbol{\epsilon} \)
-  4. `spectral_activation`:  
-     \( \Psi_t = \boldsymbol{\sigma}^+ : \boldsymbol{\epsilon} \),  
-     where \( \boldsymbol{\sigma}^+ \) is the tensile-activated component of stress obtained from spectral decomposition.
+     $\Psi_t = 2E\epsilon_{\text{max}}^2\left(\frac{1+R}{2}\right)^2\left(\frac{1+R}{2}\right)^n$,  
+     where $\epsilon_{\text{max}}$ is the maximum principal strain.  
+     Requires loading ratio $R$ and exponent $n$ to be defined in the generic material block.
+  2. `elastic_energy`:  
+     $\Psi_t = 0.5 \, \boldsymbol{\sigma} : \boldsymbol{\epsilon}$
+  3. `spectral_activation`:  
+     $\Psi_t = \boldsymbol{\sigma}^+ : \boldsymbol{\epsilon}$,  
+     where $\boldsymbol{\sigma}^+$ is the tensile-activated component of stress obtained from spectral decomposition.
 
-- **Four accumulation modes** for fatigue energy \( \bar{\alpha}_t = \bar{\alpha}_{t-1} + \Delta \bar{\alpha} \):
+- **Four accumulation modes** for fatigue energy $\bar{\alpha}_t = \bar{\alpha}_{t-1} + \Delta \bar{\alpha}$:
   1. `Monotonic` — No fatigue accumulation.  
-     \( \Delta \bar{\alpha} = 0 \)
+     $\Delta \bar{\alpha} = 0$
   2. `Fatigue` — *(default)*  
-     Compares \( \Psi_t \) with \( \Psi_{t-1} \); if \( \Psi_t > \Psi_{t-1} \), accumulate difference:  
-     \( \Delta \bar{\alpha} = \Psi_t - \Psi_{t-1} \), else 0  
-     **Note:** Highly sensitive to time step \( \Delta t \); must resolve cyclic peaks properly.
+     Compares $\Psi_t$ with $\Psi_{t-1}$; if $\Psi_t > \Psi_{t-1}$, accumulate difference:  
+     $\Delta \bar{\alpha} = \Psi_t - \Psi_{t-1}$, else 0  
+     **Note:** Highly sensitive to time step $\Delta t$; must resolve cyclic peaks properly.
   3. `FatigueCLA` — Cycle-count-based linear accumulation.  
-     \( \bar{\alpha}_t = \Psi_t \times N_t \), where \( N_t \) is the cycle count for the current step.
+     $\bar{\alpha}_t = \Psi_t \times N_t$, where $N_t$ is the cycle count for the current step.
   4. `FatigueICLA` — *Incremental* cycle-count-based accumulation.  
-     Uses increment \( \Delta N = N_t - N_{t-1} \):  
-     \( \Delta \bar{\alpha} = \Psi_t \times \Delta N \), then  
-     \( \bar{\alpha}_t = \bar{\alpha}_{t-1} + \Delta \bar{\alpha} \)
+     Uses increment $\Delta N = N_t - N_{t-1}$:  
+     $\Delta \bar{\alpha} = \Psi_t \times \Delta N$, then  
+     $\bar{\alpha}_t = \bar{\alpha}_{t-1} + \Delta \bar{\alpha}$
 
-- **Note 1:** This object only calculates fatigue energy. Users must define additional materials (e.g., fatigue degradation functions) to utilize \( \bar{\alpha} \).
+- **Note 1:** This object only calculates fatigue energy. Users must define additional materials (e.g., fatigue degradation functions) to utilize $\bar{\alpha}$.
 
-- **Note 2:** For `FatigueCLA` and `FatigueICLA`, the loading boundary condition can be set to peak amplitude, and only the cycle count \( N \) needs to be updated via an auxiliary variable.
-
+- **Note 2:** For `FatigueCLA` and `FatigueICLA`, the loading boundary condition can be set to peak amplitude, and only the cycle count $N$ needs to be updated via an auxiliary variable.
 
 **Example Usage: mean_load and Fatigue accumulation**
 ```ini
