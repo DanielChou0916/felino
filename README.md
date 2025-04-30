@@ -36,10 +36,10 @@ Computes **fatigue energy** at the current step $\Psi_t$, along with its accumul
      where $\epsilon_{\text{max}}$ is the maximum principal strain.  
      Requires loading ratio $R$ and exponent $n$ to be defined in the generic material block.
   2. `elastic_energy`:  
-     $\Psi_t = 0.5 \, \boldsymbol{\sigma} : \boldsymbol{\epsilon}$
+     $\Psi_t = 0.5 \boldsymbol{\sigma} : \boldsymbol{\epsilon}$
   3. `spectral_activation`:  
-     $\Psi_t = \boldsymbol{\sigma}^+ : \boldsymbol{\epsilon}$,  
-     where $\boldsymbol{\sigma}^+$ is the tensile-activated component of stress obtained from spectral decomposition.
+     $\Psi_t =0.5 \boldsymbol{\sigma}^+ : \boldsymbol{\epsilon}$,  
+     where $\boldsymbol{\sigma}^+$ is the tensile-activated component of stress obtained from stress spectral decomposition.
 
 - **Four accumulation modes** for fatigue energy $\bar\alpha_t = \bar{\alpha}_{t-1} + \Delta \bar{\alpha}$:
   1. `Monotonic` — No fatigue accumulation.  
