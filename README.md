@@ -53,7 +53,7 @@ Computes **fatigue energy** at the current step $\Psi_t$, along with its accumul
   4. `FatigueICLA` — *Incremental* cycle-count-based accumulation.  
      Uses increment $\Delta N = N_t - N_{t-1}$:  
      $\Delta \bar{\alpha} = \Psi_t \times \Delta N$, then  
-     $\bar{\alpha}_t = \bar{\alpha}_{t-1} + \Delta \bar{\alpha}$
+     $\bar\alpha_t = \bar{\alpha}_{t-1} + \Delta \bar{\alpha}$
 
 - **Note 1:** This object only calculates fatigue energy. Users must define additional materials (e.g., fatigue degradation functions) to utilize $\bar{\alpha}$.
 
