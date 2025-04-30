@@ -14,7 +14,7 @@ deltat = ${fparse 100 * period}
 [MultiApps]
   [crack]
     type = TransientMultiApp
-    input_files = 'test_ElasEn_CLA_f.i'
+    input_files = 'MeanLoad_f.i'
   []
 []
 
@@ -303,7 +303,7 @@ deltat = ${fparse 100 * period}
 []
 
 [Outputs]
-  file_base=elastic_energy_ICLA
+  file_base=mean_loadR05_ICLA
   exodus = true
   #perf_graph = true
   csv = true

@@ -14,7 +14,7 @@ deltat = ${fparse 100 * period}
 [MultiApps]
   [crack]
     type = TransientMultiApp
-    input_files = 'test_MeanLoad_CLA_f.i'
+    input_files = 'SpectAct_f.i'
   []
 []
 
@@ -303,7 +303,7 @@ deltat = ${fparse 100 * period}
 []
 
 [Outputs]
-  file_base=mean_loadR05_ICLA
+  file_base=spectral_activation_ICLA
   exodus = true
   #perf_graph = true
   csv = true
