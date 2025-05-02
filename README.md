@@ -32,7 +32,7 @@ Computes **fatigue energy** at the current step $\Psi_t$, along with its accumul
 
 - **Three approaches for energy calculation**:
   1. `mean_load`: Default mode.  
-     $\Psi_t = 2E\epsilon_{\text{max}}^2\left(\frac{1+R}{2}\right)^2\left(\frac{1+R}{2}\right)^n$,  
+     $\Psi_t = 2E\epsilon_{\text{max}}^2\left(\frac{1+R}{2}\right)^2\left(\frac{1-R}{2}\right)^n$,  
      where $\epsilon_{\text{max}}$ is the maximum principal strain.  
      Requires loading ratio $R$ and exponent $n$ to be defined in the generic material block.
   2. `elastic_energy`:  
