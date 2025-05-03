@@ -33,7 +33,7 @@ ADComputeFatigueEnergy::validParams()
 ADComputeFatigueEnergy::ADComputeFatigueEnergy(const InputParameters & parameters)
   : Material(parameters), 
     GuaranteeConsumer(this),
-    _uncracked_base_name(isParamValid("uncracked_base_name") ? getParam<std::string>("uncracked_base_name") + "_" : ""),
+    _uncracked_base_name(getParam<std::string>("uncracked_base_name").empty() ? "" : getParam<std::string>("uncracked_base_name") + "_"),
     _finite_strain_model(getParam<bool>("finite_strain_model")),
     _strain(
         _finite_strain_model

@@ -8,8 +8,8 @@ C0 = 2#2.666667
 L = 1e4
 
 alpha_critical = 62.5 #MPa
-#R=0.5
-#n=0.5
+R=0.5
+n=0.5
 [Mesh]
   file = mesh/mesh_in.e
   uniform_refine = 0
@@ -108,19 +108,14 @@ alpha_critical = 62.5 #MPa
 
 [Materials]
   [./uncracked_strain]
-    type = ADComputeFiniteStrain
-    base_name = uncracked
-  [../]
-  [./trial_stress]
-    type = ADComputeFiniteStrainElasticStress
-    base_name = uncracked
+    type = ADComputeSmallStrain
   [../]
   [./pfbulkmat]
     type = ADGenericConstantMaterial
-    #prop_names =  'load_ratio  material_constant_n    alpha_critical'
-    #prop_values = '${R}        ${n}                   ${alpha_critical}' 
-    prop_names =  'alpha_critical'
-    prop_values = '${alpha_critical}' 
+    prop_names =  'load_ratio  material_constant_n    alpha_critical'
+    prop_values = '${R}        ${n}                   ${alpha_critical}' 
+    #prop_names =  'alpha_critical'
+    #prop_values = '${alpha_critical}' 
   [../]
   [./public_materials_forPF_model]
     type = ADGenericConstantMaterial
@@ -131,7 +126,6 @@ alpha_critical = 62.5 #MPa
     type = ADComputeIsotropicElasticityTensor #Constitutive law here
     poissons_ratio = ${nu}
     youngs_modulus = ${E} #MPa
-    base_name = uncracked
   [../]
   [./degradation] # Define w(d)
     type = ADDerivativeParsedMaterial
@@ -152,9 +146,9 @@ alpha_critical = 62.5 #MPa
   [../]
   [./fatigue_variable]
     type = ADComputeFatigueEnergy
-    energy_calculation = spectral_activation
-    uncracked_base_name = uncracked
-    finite_strain_model = true
+    #energy_calculation = spectral_activation
+    #uncracked_base_name = uncracked
+    finite_strain_model = false
     #D_name = #no need to set this if multiply_by_D = false
     multiply_by_D = false
     accumulation_mode = FatigueICLA
@@ -174,15 +168,14 @@ alpha_critical = 62.5 #MPa
     property_name = kappa_op
     expression = '2 * gc * l / C0 * f_alpha'
   [../]
-  [./cracked_stress]
-    type = ADComputePFFStress
+  [./cracked_stress] 
+    type = ADGeoLinearElasticPFFractureStress
     c = d
     E_name = E_el
-    D_name = degradation
-    decomposition = spectral
+    D_name = degradation 
+    decomposition_type = stress_spectral 
     use_current_history_variable = true
-    uncracked_base_name = uncracked
-    finite_strain_model = true
+    use_snes_vi_solver = true
   [../]
   [./fracture_driving_energy]
     type = ADDerivativeSumMaterial

@@ -14,7 +14,7 @@ deltat = ${fparse 100 * period}
 [MultiApps]
   [crack]
     type = TransientMultiApp
-    input_files = 'MeanLoad_f.i'
+    input_files = 'MeanLoad_smallStrain_f.i'
   []
 []
 
@@ -89,16 +89,15 @@ deltat = ${fparse 100 * period}
 []
 
 [Physics/SolidMechanics/QuasiStatic]
-  [./All]
+  [all]
     add_variables = true
-    strain = FINITE
+    strain = SMALL
+    #automatic_eigenstrain_names = true
     incremental = true
-    additional_generate_output = 'stress_xx stress_yy stress_xy'
+    additional_generate_output = 'stress_xx stress_yy stress_xy strain_xx strain_yy strain_xy'
     use_automatic_differentiation=true
-    strain_base_name = uncracked
-    decomposition_method = EigenSolution
-  [../]
-[../]
+  []
+[]
 
 
 [AuxVariables]
@@ -186,11 +185,6 @@ deltat = ${fparse 100 * period}
     type = ADComputeIsotropicElasticityTensor #Constitutive law here
     poissons_ratio = ${nu}
     youngs_modulus = ${E} #MPa
-    base_name = uncracked
-  [../]
-  [./trial_stress]
-    type = ADComputeFiniteStrainElasticStress
-    base_name = uncracked
   [../]
   [./degradation] # Define w(d)
     type = ADDerivativeParsedMaterial
@@ -201,15 +195,14 @@ deltat = ${fparse 100 * period}
     constant_expressions = '2 1e-6'
     derivative_order = 2
   [../]
-  [./cracked_stress]
-    type = ADComputePFFStress
+  [./cracked_stress] 
+    type = ADGeoLinearElasticPFFractureStress
     c = d
     E_name = E_el
-    D_name = degradation
-    decomposition = spectral
+    D_name = degradation 
+    decomposition_type = stress_spectral 
     use_current_history_variable = true
-    uncracked_base_name = uncracked
-    finite_strain_model = true
+    use_snes_vi_solver = true
   [../]
 []
 
@@ -303,7 +296,7 @@ deltat = ${fparse 100 * period}
 []
 
 [Outputs]
-  file_base=mean_loadR05_ICLA
+  file_base=smallstrain_mean_loadR05_ICLA
   exodus = true
   #perf_graph = true
   csv = true

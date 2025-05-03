@@ -82,7 +82,7 @@ deltat = ${fparse 100 * period}
 []
 
 [Mesh]
-  file = ../mesh/mesh_in.e
+  file = mesh/mesh_in.e
   uniform_refine = 0
   skip_partitioning = true
   construct_side_list_from_node_list=true
