@@ -1,0 +1,328 @@
+E = 21e4 #MPa= 210 GPa
+nu = 0.3     #
+gc = 2.7     #KJ/m2 = MPa.mm
+l = 0.04    #mm
+
+umax = 1
+period = 0.01
+num_cycle = 3800000
+end_time = ${fparse period * num_cycle}
+deltat = ${fparse 100 * period} 
+[GlobalParams]
+  displacements = 'disp_x disp_y disp_z'
+[]
+[MultiApps]
+  [crack]
+    type = TransientMultiApp
+    input_files = 'MeanLoad3D_f.i'
+  []
+[]
+
+[Transfers]
+  [to_disp_x]
+    type = MultiAppCopyTransfer #MultiAppGeometricInterpolationTransfer# MultiAppCopyTransfer #
+    to_multi_app = 'crack'
+    source_variable = 'disp_x'
+    variable = 'disp_x'
+  []
+  [to_disp_y]
+    type = MultiAppCopyTransfer
+    to_multi_app = 'crack'
+    source_variable = 'disp_y'
+    variable = 'disp_y'
+  []
+  [to_disp_z]
+  type = MultiAppCopyTransfer #MultiAppGeometricInterpolationTransfer# MultiAppCopyTransfer #
+  to_multi_app = 'crack'
+  source_variable = 'disp_z'
+  variable = 'disp_z'
+  []
+  [to_CLA]
+    type = MultiAppCopyTransfer
+    to_multi_app = 'crack'
+    source_variable = 'n_cycle'
+    variable = 'n_cycle'
+  []
+  [from_d]
+    type = MultiAppCopyTransfer
+    from_multi_app = 'crack'
+    source_variable = 'd'
+    variable = 'd'
+  []
+  [from_current_fatigue]
+    type = MultiAppCopyTransfer
+    from_multi_app = 'crack'
+    source_variable = 'current_fatigue'
+    variable = 'current_fatigue'
+  []
+  [from_accumulate_fatigue]
+    type = MultiAppCopyTransfer
+    from_multi_app = 'crack'
+    source_variable = 'bar_alpha'
+    variable = 'bar_alpha'
+  []
+  [from_fatigue_function]
+    type = MultiAppCopyTransfer
+    from_multi_app = 'crack'
+    source_variable = 'f_alpha'
+    variable = 'f_alpha'
+  []
+  [from_kappa]
+    type = MultiAppCopyTransfer
+    from_multi_app = 'crack'
+    source_variable = 'kappa_op'
+    variable = 'kappa_op'
+  []
+  [from_dkdx]
+    type = MultiAppCopyTransfer
+    from_multi_app = 'crack'
+    source_variable = 'dkappa_dx'
+    variable = 'dkappa_dx'
+  []
+  [from_dkdy]
+    type = MultiAppCopyTransfer
+    from_multi_app = 'crack'
+    source_variable = 'dkappa_dy'
+    variable = 'dkappa_dy'
+  []
+  [from_dkdz]
+  type = MultiAppCopyTransfer
+  from_multi_app = 'crack'
+  source_variable = 'dkappa_dz'
+  variable = 'dkappa_dz'
+[]
+[]
+
+[Mesh]
+  #file = mesh/mesh_in.e
+  file = bar.inp
+  uniform_refine = 0
+  skip_partitioning = true
+  construct_side_list_from_node_list=true
+[]
+
+[Physics/SolidMechanics/QuasiStatic]
+  [./All]
+    add_variables = true
+    strain = FINITE
+    incremental = true
+    additional_generate_output = 'stress_xx stress_yy stress_xy stress_zz stress_xz stress_yz'
+    use_automatic_differentiation=true
+    strain_base_name = uncracked
+    decomposition_method = EigenSolution
+  [../]
+[../]
+
+
+[AuxVariables]
+  [./d]
+  []
+  [./bounds_dummy]
+  [../]
+  [./current_fatigue]
+    order = CONSTANT
+    family = MONOMIAL
+  []
+  [./bar_alpha]
+    order = CONSTANT
+    family = MONOMIAL
+  []
+  [./f_alpha]
+    order = CONSTANT
+    family = MONOMIAL
+  []
+  [./kappa_op]
+    order = FIRST
+    family = MONOMIAL
+  []
+  [./dkappa_dx]
+    order = CONSTANT
+    family = MONOMIAL
+  [../]
+  [./dkappa_dy]
+    order = CONSTANT
+    family = MONOMIAL
+  [../]
+  [./dkappa_dz]
+  order = CONSTANT
+  family = MONOMIAL
+  [../]
+  [./n_cycle]
+    order = CONSTANT
+    family = MONOMIAL
+  [../]
+[]
+
+[AuxKernels]
+  [./n_cycle_aux]
+    type = FunctionAux
+    variable = n_cycle
+    function = current_cycle
+  [../]
+[]
+
+[Functions]
+  [./current_cycle]
+    type = ParsedFunction
+    expression = 't / ${period}'
+  [../]
+[]
+
+[BCs] # 2: top,   3:bottom
+  [leftright_cycle]
+    type = FunctionDirichletBC
+    variable = 'disp_x'
+    boundary = 'left right'
+    ## It is not recommanded to set BC as explicit periodic function
+    ## this well  expose the simulation in no fatigue accumulation risk!
+    #function = '${umax} * 0.5 * (cos(2 * 3.1415926 * t / ${period}) + 1)'
+    function = '${umax}'
+  []
+  [yfix12]
+    type = DirichletBC
+    variable = 'disp_y'
+    boundary = 'left right'
+    value = 0
+  []
+  [zfix12]
+    type = DirichletBC
+    variable = 'disp_z'
+    boundary = 'left right'
+    value = 0
+  []
+[]
+
+
+[Materials]
+  #[./pfbulkmat]
+  #  type = ADGenericConstantMaterial
+  #  prop_names =  'gc     l     '
+  #  prop_values = '${gc}  ${l}  ' #Gc:MPa mm
+  #[../]
+  [./elasticity_tensor]
+    type = ADComputeIsotropicElasticityTensor #Constitutive law here
+    poissons_ratio = ${nu}
+    youngs_modulus = ${E} #MPa
+    base_name = uncracked
+  [../]
+  [./trial_stress]
+    type = ADComputeFiniteStrainElasticStress
+    base_name = uncracked
+  [../]
+  [./degradation] # Define w(d)
+    type = ADDerivativeParsedMaterial
+    property_name = degradation
+    coupled_variables = 'd'
+    expression = '(1-d)^p*(1-k)+k'
+    constant_names       = 'p k'
+    constant_expressions = '2 1e-6'
+    derivative_order = 2
+  [../]
+  [./cracked_stress]
+    type = ADComputePFFStress
+    c = d
+    E_name = E_el
+    D_name = degradation
+    decomposition = spectral
+    use_current_history_variable = true
+    uncracked_base_name = uncracked
+    finite_strain_model = true
+  [../]
+[]
+
+[Postprocessors]
+  [./cycle_current]
+    type = ElementAverageValue
+    variable = n_cycle
+  [../]
+  [./max_current]
+    type = ElementExtremeValue
+    variable = current_fatigue
+  [../]
+  [./max_accumulate]
+    type = ElementExtremeValue
+    variable = bar_alpha
+  [../]
+  [./top_stress_xx]
+    type = SideAverageValue
+    variable = stress_xx
+    boundary = right
+  [../]
+  [./av_disp_x]
+    type = SideAverageValue
+    variable = disp_x
+    boundary = right
+  [../]
+  [./crack_area]
+    type = ElementIntegralVariablePostprocessor
+    variable = d
+  [../]
+  [./max_d]
+    type = NodalExtremeValue
+    variable = d
+  [../]
+  #[./dt]
+  #  type = TimestepSize
+  #[../]
+  #[./z_n_nl_its]
+  #  type = NumNonlinearIterations
+  #  accumulate_over_step = true
+  #[../]
+  #[./z_n_picard_its]
+  #  type = NumFixedPointIterations
+  #[../]
+  [./run_time]
+    type = PerfGraphData
+    data_type = TOTAL
+    section_name = Root
+  [../]
+[]
+
+
+[Preconditioning]
+  [./smp]
+    type = SMP
+    full = true
+ [../]
+[]
+
+
+[Executioner]
+  type = Transient
+
+  solve_type = NEWTON
+  petsc_options_iname = '-pc_type -pc_factor_mat_solver_package '
+  petsc_options_value = 'lu       superlu_dist                  '
+  #solve_type = PJFNK
+  #petsc_options_iname = '-pc_type'
+  #petsc_options_value = 'lu'
+  automatic_scaling = true
+
+  nl_rel_tol = 1e-6
+  nl_abs_tol = 1e-7
+
+  #[./TimeStepper]
+  #  type = IterationAdaptiveDT
+  #  dt = 5e-5
+  #  optimal_iterations = 12
+  #  cutback_factor = 0.3 
+  #  growth_factor = 1.25
+  #[../]
+  dt = ${deltat}
+  end_time = ${end_time}
+  #num_steps=6
+  fixed_point_max_its = 12
+  nl_max_its = 16  
+  l_max_its = 20  
+  accept_on_max_fixed_point_iteration = true
+  fixed_point_rel_tol = 1e-6
+  fixed_point_abs_tol = 1e-7
+[]
+
+[Outputs]
+  file_base=test_fatigue_CLA
+  exodus = true
+  #perf_graph = true
+  csv = true
+  time_step_interval = 2
+[]
