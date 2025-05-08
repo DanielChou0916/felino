@@ -10,12 +10,60 @@ L = 1e4
 alpha_critical = 62.5 #MPa
 R=0.5
 n=0.5
+
 [Mesh]
-  #file = mesh/mesh_in.e
-  file = bar.inp
-  uniform_refine = 0
-  skip_partitioning = true
-  construct_side_list_from_node_list=true
+  [gen]
+    type = GeneratedMeshGenerator
+    dim = 3
+    nx = 40#160
+    ny = 8#32
+    nz = 4
+    xmax = 100#
+    ymax = 20 #
+    zmax = 10
+  []
+[]
+
+[Adaptivity]
+  marker = marker
+  initial_marker = marker
+  initial_steps = 5
+  stop_time = 0
+  max_h_level = 5
+  [Markers]
+    [marker]
+      type = RotatedBoxMarker
+      cx = 50
+      cy = 10
+      cz = 5
+      lx = 4
+      ly = 22
+      lz = 20
+      angle_z = 0
+      angle_y = -45
+      angle_x = 0
+      inside = REFINE
+      outside = DO_NOTHING
+    []
+  []
+[]
+
+[ICs]
+  [init_d_box]
+    type = MultiRotBoundingBoxIC
+    variable = d
+    cx = '50'
+    cy = '16'
+    cz = '5'
+    lx = '0.12'
+    ly = '11'
+    lz = '20'
+    angle_z = '0'
+    angle_y = '-45'
+    inside = '1'
+    outside = '0'
+    int_width = '0.001 '
+  [../]
 []
 
 [GlobalParams]

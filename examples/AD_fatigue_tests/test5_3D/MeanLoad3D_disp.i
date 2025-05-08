@@ -1,13 +1,13 @@
 E = 21e4 #MPa= 210 GPa
 nu = 0.3     #
-gc = 2.7     #KJ/m2 = MPa.mm
-l = 0.04    #mm
+#gc = 2.7     #KJ/m2 = MPa.mm
+#l = 0.04    #mm
 
 umax = 1
-period = 0.01
+period = 0.0001
 num_cycle = 3800000
 end_time = ${fparse period * num_cycle}
-deltat = ${fparse 100 * period} 
+deltat = ${fparse 10000 * period} 
 [GlobalParams]
   displacements = 'disp_x disp_y disp_z'
 []
@@ -94,11 +94,58 @@ deltat = ${fparse 100 * period}
 []
 
 [Mesh]
-  #file = mesh/mesh_in.e
-  file = bar.inp
-  uniform_refine = 0
-  skip_partitioning = true
-  construct_side_list_from_node_list=true
+  [gen]
+    type = GeneratedMeshGenerator
+    dim = 3
+    nx = 40#160
+    ny = 8#32
+    nz = 4
+    xmax = 100#
+    ymax = 20 #
+    zmax = 10
+  []
+[]
+
+[Adaptivity]
+  marker = marker
+  initial_marker = marker
+  initial_steps = 5
+  stop_time = 0
+  max_h_level = 5
+  [Markers]
+    [marker]
+      type = RotatedBoxMarker
+      cx = 50
+      cy = 10
+      cz = 5
+      lx = 4
+      ly = 22
+      lz = 20
+      angle_z = 0
+      angle_y = -45
+      angle_x = 0
+      inside = REFINE
+      outside = DO_NOTHING
+    []
+  []
+[]
+
+[ICs]
+  [init_d_box]
+    type = MultiRotBoundingBoxIC
+    variable = d
+    cx = '50'
+    cy = '16'
+    cz = '5'
+    lx = '0.12'
+    ly = '11'
+    lz = '20'
+    angle_z = '0'
+    angle_y = '-45'
+    inside = '1'
+    outside = '0'
+    int_width = '0.001 '
+  [../]
 []
 
 [Physics/SolidMechanics/QuasiStatic]
@@ -169,14 +216,23 @@ deltat = ${fparse 100 * period}
 []
 
 [BCs] # 2: top,   3:bottom
-  [leftright_cycle]
+  [right_cycle]
     type = FunctionDirichletBC
     variable = 'disp_x'
-    boundary = 'left right'
+    boundary = 'right'
     ## It is not recommanded to set BC as explicit periodic function
     ## this well  expose the simulation in no fatigue accumulation risk!
     #function = '${umax} * 0.5 * (cos(2 * 3.1415926 * t / ${period}) + 1)'
     function = '${umax}'
+  []
+  [left_cycle]
+    type = FunctionDirichletBC
+    variable = 'disp_x'
+    boundary = 'left'
+    ## It is not recommanded to set BC as explicit periodic function
+    ## this well  expose the simulation in no fatigue accumulation risk!
+    #function = '-1*${umax} * 0.5 * (cos(2 * 3.1415926 * t / ${period}) + 1)'
+    function = '-1*${umax}'
   []
   [yfix12]
     type = DirichletBC
@@ -320,9 +376,9 @@ deltat = ${fparse 100 * period}
 []
 
 [Outputs]
-  file_base=test_fatigue_CLA
+  file_base=bar_3D
   exodus = true
   #perf_graph = true
   csv = true
-  time_step_interval = 2
+  time_step_interval = 4
 []
