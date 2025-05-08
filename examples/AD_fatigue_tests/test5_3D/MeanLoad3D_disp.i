@@ -4,10 +4,10 @@ nu = 0.3     #
 #l = 0.04    #mm
 
 umax = 1
-period = 0.0001
+period = 0.00001
 num_cycle = 3800000
 end_time = ${fparse period * num_cycle}
-deltat = ${fparse 10000 * period} 
+deltat = ${fparse 100000 * period} 
 [GlobalParams]
   displacements = 'disp_x disp_y disp_z'
 []
@@ -351,5 +351,5 @@ deltat = ${fparse 10000 * period}
   exodus = true
   #perf_graph = true
   csv = true
-  time_step_interval = 4
+  time_step_interval = 1
 []
