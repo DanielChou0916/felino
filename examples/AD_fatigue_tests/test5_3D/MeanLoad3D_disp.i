@@ -96,7 +96,7 @@ deltat = ${fparse 100000 * period}
 [Mesh]
   [gen]
     type = FileMeshGenerator
-    file = 'mesh/bar.e'
+    file = '../../mesh/bar_mesh/bar_cut.e'
   []
 []
 

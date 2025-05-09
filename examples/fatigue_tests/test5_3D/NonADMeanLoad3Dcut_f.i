@@ -41,16 +41,15 @@ n=0.5
   displacements = 'disp_x disp_y disp_z'
 []
 
-[Actions/ADNonconserved]
-  [./d]
-    free_energy = F
-    kappa = kappa_op
-    mobility = L
-    variable_mobility=false
-    use_grad_kappa = true
-    grad_kappa_x = dkappa_dx
-    grad_kappa_y = dkappa_dy
-    grad_kappa_z = dkappa_dz
+[Modules]
+  [./PhaseField]
+    [./Nonconserved]
+      [./d]
+        free_energy = F
+        kappa = kappa_op
+        mobility = L
+      [../]
+    [../]
   [../]
 []
 
@@ -79,18 +78,18 @@ n=0.5
     order = FIRST
     family = MONOMIAL
   []
-  [./dkappa_dx]
-    order = CONSTANT
-    family = MONOMIAL
-  [../]
-  [./dkappa_dy]
-    order = CONSTANT
-    family = MONOMIAL
-  [../]
-  [./dkappa_dz]
-  order = CONSTANT
-  family = MONOMIAL
-  [../]
+  #[./dkappa_dx]
+  #  order = CONSTANT
+  #  family = MONOMIAL
+  #[../]
+  #[./dkappa_dy]
+  #  order = CONSTANT
+  #  family = MONOMIAL
+  #[../]
+  #[./dkappa_dz]
+  #  order = CONSTANT
+  #  family = MONOMIAL
+  #[../]
   [./n_cycle]
     order = CONSTANT
     family = MONOMIAL
@@ -99,73 +98,73 @@ n=0.5
 
 [AuxKernels]
   [./current_fatigue]
-    type = ADMaterialRealAux
+    type = MaterialRealAux
     variable = current_fatigue
     property = current_fatigue
   [../]
   [./bar_alpha]
-    type = ADMaterialRealAux
+    type = MaterialRealAux
     variable = bar_alpha
     property = bar_alpha
     execute_on = timestep_end
   [../]
   [./f_alpha]
-    type = ADMaterialRealAux
+    type = MaterialRealAux
     variable = f_alpha
     property = f_alpha
   [../]
   [./kappa_op]
-    type = ADMaterialRealAux
+    type = MaterialRealAux
     variable = kappa_op
     property = kappa_op
   [../]
-  [./dfatigue_dx]
-    type = VariableGradientComponent
-    variable = dkappa_dx         
-    gradient_variable = kappa_op    
-    component = 'x'
-  [../]
-  [./dfatigue_dy]
-    type = VariableGradientComponent
-    variable = dkappa_dy
-    gradient_variable = kappa_op
-    component = 'y'
-  [../]
-  [./dfatigue_dz]
-  type = VariableGradientComponent
-  variable = dkappa_dz
-  gradient_variable = kappa_op
-  component = 'z'
-[../]
+  #[./dfatigue_dx]
+  #  type = VariableGradientComponent
+  #  variable = dkappa_dx         
+  #  gradient_variable = kappa_op    
+  #  component = 'x'
+  #[../]
+  #[./dfatigue_dy]
+  #  type = VariableGradientComponent
+  #  variable = dkappa_dy
+  #  gradient_variable = kappa_op
+  #  component = 'y'
+  #[../]
+  #[./dfatigue_dz]
+  #  type = VariableGradientComponent
+  #  variable = dkappa_dz
+  #  gradient_variable = kappa_op
+  #  component = 'z'
+  #[../]
 []
 
 [Materials]
   [./uncracked_strain]
-    type = ADComputeFiniteStrain
+    type = ComputeFiniteStrain
     base_name = uncracked
   [../]
   [./trial_stress]
-    type = ADComputeFiniteStrainElasticStress
+    type = ComputeFiniteStrainElasticStress
     base_name = uncracked
   [../]
   [./pfbulkmat]
-    type = ADGenericConstantMaterial
+    type = GenericConstantMaterial
     prop_names =  'load_ratio  material_constant_n    alpha_critical'
     prop_values = '${R}        ${n}                   ${alpha_critical}' 
   [../]
   [./public_materials_forPF_model]
-    type = ADGenericConstantMaterial
+    type = GenericConstantMaterial
     prop_names =  'gc     l    xi    C0      L  ' 
     prop_values = '${gc}  ${l} ${xi} ${C0}   ${L}' #'0 2'#for AT2 # Or use '1 2.6666667' for AT1
   [../]
   [./elasticity_tensor]
-    type = ADComputeIsotropicElasticityTensor #Constitutive law here
+    type = ComputeIsotropicElasticityTensor #Constitutive law here
     poissons_ratio = ${nu}
     youngs_modulus = ${E} #MPa
     base_name = uncracked
   [../]
   [./degradation] # Define w(d)
-    type = ADDerivativeParsedMaterial
+    type = DerivativeParsedMaterial
     property_name = degradation
     coupled_variables = 'd'
     expression = '(1-d)^p*(1-k)+k'
@@ -174,7 +173,7 @@ n=0.5
     derivative_order = 2
   [../]
   [./local_fracture_energy] #Define psi_frac and alpha(d)
-    type = ADDerivativeParsedMaterial
+    type = DerivativeParsedMaterial
     property_name = local_fracture_energy
     coupled_variables = 'd'
     material_property_names = 'gc l xi C0 f_alpha'
@@ -182,7 +181,7 @@ n=0.5
     derivative_order = 2
   [../]
   [./fatigue_variable]
-    type = ADComputeFatigueEnergy
+    type = ComputeFatigueEnergy
     uncracked_base_name = uncracked
     finite_strain_model = true
     #D_name = #no need to set this if multiply_by_D = false
@@ -193,19 +192,19 @@ n=0.5
     bar_psi_name = current_fatigue
   []
   [./fatigue_function]
-    type = ADParsedMaterial
+    type = ParsedMaterial
     material_property_names = 'bar_alpha alpha_critical'
     property_name = f_alpha
     expression = 'if(bar_alpha > alpha_critical, (2*alpha_critical/(bar_alpha + alpha_critical))^2, 1)'
   []  
   [./define_kappa]
-    type = ADParsedMaterial
+    type = ParsedMaterial
     material_property_names = 'gc l C0 f_alpha'
     property_name = kappa_op
     expression = '2 * gc * l / C0 * f_alpha'
   [../]
   [./cracked_stress]
-    type = ADComputePFFStress
+    type = ComputePFFStress
     c = d
     E_name = E_el
     D_name = degradation
@@ -215,7 +214,7 @@ n=0.5
     finite_strain_model = true
   [../]
   [./fracture_driving_energy]
-    type = ADDerivativeSumMaterial
+    type = DerivativeSumMaterial
     #block = 1
     coupled_variables = d
     sum_materials = 'E_el local_fracture_energy'

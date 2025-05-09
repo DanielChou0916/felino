@@ -86,11 +86,11 @@ deltat = ${fparse 100000 * period}
     variable = 'dkappa_dy'
   []
   [from_dkdz]
-  type = MultiAppCopyTransfer
-  from_multi_app = 'crack'
-  source_variable = 'dkappa_dz'
-  variable = 'dkappa_dz'
-[]
+    type = MultiAppCopyTransfer
+    from_multi_app = 'crack'
+    source_variable = 'dkappa_dz'
+    variable = 'dkappa_dz'
+  []
 []
 
 [Mesh]
@@ -125,7 +125,7 @@ deltat = ${fparse 100000 * period}
     strain = FINITE
     incremental = true
     additional_generate_output = 'stress_xx stress_yy stress_xy stress_zz stress_xz stress_yz'
-    use_automatic_differentiation=true
+    use_automatic_differentiation=false
     strain_base_name = uncracked
     decomposition_method = EigenSolution
   [../]
@@ -162,8 +162,8 @@ deltat = ${fparse 100000 * period}
     family = MONOMIAL
   [../]
   [./dkappa_dz]
-  order = CONSTANT
-  family = MONOMIAL
+    order = CONSTANT
+    family = MONOMIAL
   [../]
   [./n_cycle]
     order = CONSTANT
@@ -222,22 +222,22 @@ deltat = ${fparse 100000 * period}
 
 [Materials]
   #[./pfbulkmat]
-  #  type = ADGenericConstantMaterial
+  #  type = GenericConstantMaterial
   #  prop_names =  'gc     l     '
   #  prop_values = '${gc}  ${l}  ' #Gc:MPa mm
   #[../]
   [./elasticity_tensor]
-    type = ADComputeIsotropicElasticityTensor #Constitutive law here
+    type = ComputeIsotropicElasticityTensor #Constitutive law here
     poissons_ratio = ${nu}
     youngs_modulus = ${E} #MPa
     base_name = uncracked
   [../]
   [./trial_stress]
-    type = ADComputeFiniteStrainElasticStress
+    type = ComputeFiniteStrainElasticStress
     base_name = uncracked
   [../]
   [./degradation] # Define w(d)
-    type = ADDerivativeParsedMaterial
+    type = DerivativeParsedMaterial
     property_name = degradation
     coupled_variables = 'd'
     expression = '(1-d)^p*(1-k)+k'
@@ -246,7 +246,7 @@ deltat = ${fparse 100000 * period}
     derivative_order = 2
   [../]
   [./cracked_stress]
-    type = ADComputePFFStress
+    type = ComputePFFStress
     c = d
     E_name = E_el
     D_name = degradation

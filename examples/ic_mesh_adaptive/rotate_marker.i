@@ -2,11 +2,11 @@
   [gen]
     type = GeneratedMeshGenerator
     dim = 3
-    nx = 20#160
-    ny = 16#32
-    nz = 8
-    xmin = 37.5
-    xmax = 62.5#
+    nx = 22#160
+    ny = 22#32
+    nz = 11
+    xmin = 40
+    xmax = 60#
     ymax = 20 #
     zmax = 10
   []
@@ -15,9 +15,9 @@
 [Adaptivity]
   marker = marker
   initial_marker = marker
-  initial_steps = 3
+  initial_steps = 2
   stop_time = 0
-  max_h_level = 3
+  max_h_level = 2
   [Markers]
     [marker]
       type = RotatedBoxMarker
@@ -87,7 +87,7 @@
 []
 
 [Outputs]
-  file_base=bar_cut
+  file_base=bar_cut3
   exodus = true
   #csv = true
   print_linear_residuals = false
