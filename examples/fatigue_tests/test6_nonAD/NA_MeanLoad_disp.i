@@ -1,20 +1,20 @@
 E = 21e4 #MPa= 210 GPa
 nu = 0.3     #
-#gc = 2.7     #KJ/m2 = MPa.mm
-#l = 0.04    #mm
+gc = 2.7     #KJ/m2 = MPa.mm
+l = 0.016    #mm
 
-umax = 0.2
-period = 0.00001
-num_cycle = 3800000
+umax = 0.0005
+period = 0.01
+num_cycle = 38000
 end_time = ${fparse period * num_cycle}
-deltat = ${fparse 100000 * period} 
+deltat = ${fparse 100 * period} 
 [GlobalParams]
-  displacements = 'disp_x disp_y disp_z'
+  displacements = 'disp_x disp_y'
 []
 [MultiApps]
   [crack]
     type = TransientMultiApp
-    input_files = 'MeanLoad3Dcut_f.i'
+    input_files = 'NA_MeanLoad_f.i'
   []
 []
 
@@ -30,12 +30,6 @@ deltat = ${fparse 100000 * period}
     to_multi_app = 'crack'
     source_variable = 'disp_y'
     variable = 'disp_y'
-  []
-  [to_disp_z]
-  type = MultiAppCopyTransfer #MultiAppGeometricInterpolationTransfer# MultiAppCopyTransfer #
-  to_multi_app = 'crack'
-  source_variable = 'disp_z'
-  variable = 'disp_z'
   []
   [to_CLA]
     type = MultiAppCopyTransfer
@@ -85,74 +79,13 @@ deltat = ${fparse 100000 * period}
     source_variable = 'dkappa_dy'
     variable = 'dkappa_dy'
   []
-  [from_dkdz]
-    type = MultiAppCopyTransfer
-    from_multi_app = 'crack'
-    source_variable = 'dkappa_dz'
-    variable = 'dkappa_dz'
-  []
 []
 
-#[Mesh]
-#  [gen]
-#    type = FileMeshGenerator
-#    file = '../../mesh/bar_mesh/bar_cut3.e'
-#  []
-#[]
 [Mesh]
-  [gen]
-    type = GeneratedMeshGenerator
-    dim = 3
-    nx = 20#160
-    ny = 20#32
-    nz = 10
-    xmin = 40
-    xmax = 60#
-    ymax = 20 #
-    zmax = 10
-  []
-[]
-
-[Adaptivity]
-  marker = marker
-  initial_marker = marker
-  initial_steps = 2
-  stop_time = 0
-  max_h_level = 2
-  [Markers]
-    [marker]
-      type = RotatedBoxMarker
-      cx = 50
-      cy = 10
-      cz = 5
-      lx = 3.8
-      ly = 22
-      lz = 22
-      angle_z = 0
-      angle_y = -47.5
-      angle_x = 0
-      inside = REFINE
-      outside = DO_NOTHING
-    []
-  []
-[]
-
-[ICs]
-  [init_d_box]
-    type = MultiRotBoundingBoxIC
-    variable = d
-    cx = '50'
-    cy = '16'
-    cz = '5'
-    lx = '0.16'
-    ly = '11'
-    lz = '20'
-    angle_z = '0'
-    angle_y = '-45'
-    inside = '1'
-    outside = '0'
-    int_width = '0.001 '
-  [../]
+  file = ../test3_fatigue_ICLA/mesh/mesh_in.e
+  uniform_refine = 0
+  skip_partitioning = true
+  construct_side_list_from_node_list=true
 []
 
 [Physics/SolidMechanics/QuasiStatic]
@@ -160,7 +93,7 @@ deltat = ${fparse 100000 * period}
     add_variables = true
     strain = FINITE
     incremental = true
-    additional_generate_output = 'stress_xx stress_yy stress_xy stress_zz stress_xz stress_yz'
+    additional_generate_output = 'stress_xx stress_yy stress_xy'
     use_automatic_differentiation=false
     strain_base_name = uncracked
     decomposition_method = EigenSolution
@@ -197,10 +130,6 @@ deltat = ${fparse 100000 * period}
     order = CONSTANT
     family = MONOMIAL
   [../]
-  [./dkappa_dz]
-    order = CONSTANT
-    family = MONOMIAL
-  [../]
   [./n_cycle]
     order = CONSTANT
     family = MONOMIAL
@@ -223,45 +152,36 @@ deltat = ${fparse 100000 * period}
 []
 
 [BCs] # 2: top,   3:bottom
-  [right_cycle]
+  [top_cycle]
     type = FunctionDirichletBC
-    variable = 'disp_x'
-    boundary = 'right'
-    ## It is not recommanded to set BC as explicit periodic function
-    ## this well  expose the simulation in no fatigue accumulation risk!
+    variable = 'disp_y'
+    boundary = 2
+    ## Instead of using cosine function for top displacement, fix it as constant
+    ## The energy accumulation is taken by [./current_cycle] block in [Functions]
     #function = '${umax} * 0.5 * (cos(2 * 3.1415926 * t / ${period}) + 1)'
     function = '${umax}'
   []
-  [left_cycle]
-    type = FunctionDirichletBC
-    variable = 'disp_x'
-    boundary = 'left'
-    ## It is not recommanded to set BC as explicit periodic function
-    ## this well  expose the simulation in no fatigue accumulation risk!
-    #function = '-1*${umax} * 0.5 * (cos(2 * 3.1415926 * t / ${period}) + 1)'
-    function = '-1*${umax}'
-  []
-  [yfix12]
+  [yfix]
     type = DirichletBC
     variable = 'disp_y'
-    boundary = 'left right'
+    boundary = 3
     value = 0
   []
-  [zfix12]
+  [xfix]
     type = DirichletBC
-    variable = 'disp_z'
-    boundary = 'left right'
+    variable = 'disp_x'
+    boundary = 3
     value = 0
   []
 []
 
 
 [Materials]
-  #[./pfbulkmat]
-  #  type = GenericConstantMaterial
-  #  prop_names =  'gc     l     '
-  #  prop_values = '${gc}  ${l}  ' #Gc:MPa mm
-  #[../]
+  [./pfbulkmat]
+    type = GenericConstantMaterial
+    prop_names =  'gc     l     '
+    prop_values = '${gc}  ${l}  ' #Gc:MPa mm
+  [../]
   [./elasticity_tensor]
     type = ComputeIsotropicElasticityTensor #Constitutive law here
     poissons_ratio = ${nu}
@@ -306,15 +226,15 @@ deltat = ${fparse 100000 * period}
     type = ElementExtremeValue
     variable = bar_alpha
   [../]
-  [./top_stress_xx]
+  [./top_stress_yy]
     type = SideAverageValue
-    variable = stress_xx
-    boundary = right
+    variable = stress_yy
+    boundary = 2
   [../]
-  [./av_disp_x]
+  [./av_disp_y]
     type = SideAverageValue
-    variable = disp_x
-    boundary = right
+    variable = disp_y
+    boundary = 2
   [../]
   [./crack_area]
     type = ElementIntegralVariablePostprocessor
@@ -373,7 +293,7 @@ deltat = ${fparse 100000 * period}
   #[../]
   dt = ${deltat}
   end_time = ${end_time}
-  #num_steps=6
+  num_steps=2
   fixed_point_max_its = 12
   nl_max_its = 16  
   l_max_its = 20  
@@ -383,7 +303,7 @@ deltat = ${fparse 100000 * period}
 []
 
 [Outputs]
-  file_base=bar_3D
+  file_base=NA_mean_loadR05_ICLA
   exodus = true
   #perf_graph = true
   csv = true

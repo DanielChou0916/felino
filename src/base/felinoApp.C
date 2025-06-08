@@ -29,6 +29,7 @@ felinoApp::registerAll(Factory & f, ActionFactory & af, Syntax & syntax)
 
   /* register custom execute flags, action syntax, etc. here */
   syntax.registerActionSyntax("ADNonconservedAction", "Actions/ADNonconserved/*"); // ✅
+  syntax.registerActionSyntax("NonconservedActionGrad", "Actions/NonconservedG/*"); // ✅
 }
 
 void

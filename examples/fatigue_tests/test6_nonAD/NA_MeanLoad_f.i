@@ -1,7 +1,7 @@
 E = 21e4 #MPa # 210 GPa
 nu = 0.3     #
 gc = 2.7     #KJ/m2 = MPa. mm
-l = 0.04   #mm
+l = 0.016    #mm
 
 xi = 0#1
 C0 = 2#2.666667
@@ -10,38 +10,18 @@ L = 1e4
 alpha_critical = 62.5 #MPa
 R=0.5
 n=0.5
-
 [Mesh]
-  [gen]
-    type = FileMeshGenerator
-    file = '../../mesh/bar_mesh/bar_cut3.e'
-  []
-[]
-
-
-[ICs]
-  [init_d_box]
-    type = MultiRotBoundingBoxIC
-    variable = d
-    cx = '50'
-    cy = '16'
-    cz = '5'
-    lx = '0.16'
-    ly = '11'
-    lz = '20'
-    angle_z = '0'
-    angle_y = '-45'
-    inside = '1'
-    outside = '0'
-    int_width = '0.001 '
-  [../]
+  file = ../test3_fatigue_ICLA/mesh/mesh_in.e
+  uniform_refine = 0
+  skip_partitioning = true
+  construct_side_list_from_node_list=true
 []
 
 [GlobalParams]
-  displacements = 'disp_x disp_y disp_z'
+  displacements = 'disp_x disp_y'
 []
 
-[Actions/ADNonconserved]
+[Actions/NonconservedG]
   [./d]
     free_energy = F
     kappa = kappa_op
@@ -50,7 +30,6 @@ n=0.5
     use_grad_kappa = true
     grad_kappa_x = dkappa_dx
     grad_kappa_y = dkappa_dy
-    grad_kappa_z = dkappa_dz
   [../]
 []
 
@@ -60,8 +39,6 @@ n=0.5
   [./disp_x]
   [../]
   [./disp_y]
-  [../]
-  [./disp_z]
   [../]
   [./current_fatigue]
     order = CONSTANT
@@ -87,10 +64,6 @@ n=0.5
     order = CONSTANT
     family = MONOMIAL
   [../]
-  [./dkappa_dz]
-  order = CONSTANT
-  family = MONOMIAL
-  [../]
   [./n_cycle]
     order = CONSTANT
     family = MONOMIAL
@@ -99,23 +72,23 @@ n=0.5
 
 [AuxKernels]
   [./current_fatigue]
-    type = ADMaterialRealAux
+    type = MaterialRealAux
     variable = current_fatigue
     property = current_fatigue
   [../]
   [./bar_alpha]
-    type = ADMaterialRealAux
+    type = MaterialRealAux
     variable = bar_alpha
     property = bar_alpha
     execute_on = timestep_end
   [../]
   [./f_alpha]
-    type = ADMaterialRealAux
+    type = MaterialRealAux
     variable = f_alpha
     property = f_alpha
   [../]
   [./kappa_op]
-    type = ADMaterialRealAux
+    type = MaterialRealAux
     variable = kappa_op
     property = kappa_op
   [../]
@@ -131,41 +104,37 @@ n=0.5
     gradient_variable = kappa_op
     component = 'y'
   [../]
-  [./dfatigue_dz]
-  type = VariableGradientComponent
-  variable = dkappa_dz
-  gradient_variable = kappa_op
-  component = 'z'
-[../]
 []
 
 [Materials]
   [./uncracked_strain]
-    type = ADComputeFiniteStrain
+    type = ComputeFiniteStrain
     base_name = uncracked
   [../]
   [./trial_stress]
-    type = ADComputeFiniteStrainElasticStress
+    type = ComputeFiniteStrainElasticStress
     base_name = uncracked
   [../]
   [./pfbulkmat]
-    type = ADGenericConstantMaterial
+    type = GenericConstantMaterial
     prop_names =  'load_ratio  material_constant_n    alpha_critical'
     prop_values = '${R}        ${n}                   ${alpha_critical}' 
+    #prop_names =  'alpha_critical'
+    #prop_values = '${alpha_critical}' 
   [../]
   [./public_materials_forPF_model]
-    type = ADGenericConstantMaterial
+    type = GenericConstantMaterial
     prop_names =  'gc     l    xi    C0      L  ' 
     prop_values = '${gc}  ${l} ${xi} ${C0}   ${L}' #'0 2'#for AT2 # Or use '1 2.6666667' for AT1
   [../]
   [./elasticity_tensor]
-    type = ADComputeIsotropicElasticityTensor #Constitutive law here
+    type = ComputeIsotropicElasticityTensor #Constitutive law here
     poissons_ratio = ${nu}
     youngs_modulus = ${E} #MPa
     base_name = uncracked
   [../]
   [./degradation] # Define w(d)
-    type = ADDerivativeParsedMaterial
+    type = DerivativeParsedMaterial
     property_name = degradation
     coupled_variables = 'd'
     expression = '(1-d)^p*(1-k)+k'
@@ -174,7 +143,7 @@ n=0.5
     derivative_order = 2
   [../]
   [./local_fracture_energy] #Define psi_frac and alpha(d)
-    type = ADDerivativeParsedMaterial
+    type = DerivativeParsedMaterial
     property_name = local_fracture_energy
     coupled_variables = 'd'
     material_property_names = 'gc l xi C0 f_alpha'
@@ -182,7 +151,8 @@ n=0.5
     derivative_order = 2
   [../]
   [./fatigue_variable]
-    type = ADComputeFatigueEnergy
+    type = ComputeFatigueEnergy
+    #energy_calculation = spectral_activation
     uncracked_base_name = uncracked
     finite_strain_model = true
     #D_name = #no need to set this if multiply_by_D = false
@@ -193,19 +163,19 @@ n=0.5
     bar_psi_name = current_fatigue
   []
   [./fatigue_function]
-    type = ADParsedMaterial
+    type = ParsedMaterial
     material_property_names = 'bar_alpha alpha_critical'
     property_name = f_alpha
     expression = 'if(bar_alpha > alpha_critical, (2*alpha_critical/(bar_alpha + alpha_critical))^2, 1)'
   []  
   [./define_kappa]
-    type = ADParsedMaterial
+    type = ParsedMaterial
     material_property_names = 'gc l C0 f_alpha'
     property_name = kappa_op
     expression = '2 * gc * l / C0 * f_alpha'
   [../]
   [./cracked_stress]
-    type = ADComputePFFStress
+    type = ComputePFFStress
     c = d
     E_name = E_el
     D_name = degradation
@@ -215,7 +185,7 @@ n=0.5
     finite_strain_model = true
   [../]
   [./fracture_driving_energy]
-    type = ADDerivativeSumMaterial
+    type = DerivativeSumMaterial
     #block = 1
     coupled_variables = d
     sum_materials = 'E_el local_fracture_energy'
