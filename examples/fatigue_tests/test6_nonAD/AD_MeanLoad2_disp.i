@@ -18,7 +18,7 @@ deltat = ${fparse 100 * period}
 [MultiApps]
   [crack]
     type = TransientMultiApp
-    input_files = 'NA_MeanLoad2_f.i'
+    input_files = 'AD_MeanLoad2_f.i'
   []
 []
 
@@ -146,7 +146,7 @@ deltat = ${fparse 100 * period}
     strain = FINITE
     incremental = true
     additional_generate_output = 'stress_xx stress_yy stress_xy'
-    use_automatic_differentiation=false
+    use_automatic_differentiation=true
     strain_base_name = uncracked
     decomposition_method = EigenSolution
   [../]
@@ -230,22 +230,22 @@ deltat = ${fparse 100 * period}
 
 [Materials]
   [./pfbulkmat]
-    type = GenericConstantMaterial
+    type = ADGenericConstantMaterial
     prop_names =  'gc     l     '
     prop_values = '${gc}  ${l}  ' #Gc:MPa mm
   [../]
   [./elasticity_tensor]
-    type = ComputeIsotropicElasticityTensor #Constitutive law here
+    type = ADComputeIsotropicElasticityTensor #Constitutive law here
     poissons_ratio = ${nu}
     youngs_modulus = ${E} #MPa
     base_name = uncracked
   [../]
   [./trial_stress]
-    type = ComputeFiniteStrainElasticStress
+    type = ADComputeFiniteStrainElasticStress
     base_name = uncracked
   [../]
   [./degradation] # Define w(d)
-    type = DerivativeParsedMaterial
+    type = ADDerivativeParsedMaterial
     property_name = degradation
     coupled_variables = 'd'
     expression = '(1-d)^p*(1-k)+k'
@@ -254,7 +254,7 @@ deltat = ${fparse 100 * period}
     derivative_order = 2
   [../]
   [./cracked_stress]
-    type = ComputePFFStress
+    type = ADComputePFFStress
     c = d
     E_name = E_el
     D_name = degradation
@@ -355,7 +355,7 @@ deltat = ${fparse 100 * period}
 []
 
 [Outputs]
-  file_base=NA_BM2
+  file_base=AD_BM2
   exodus = true
   #perf_graph = true
   csv = true
