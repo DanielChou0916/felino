@@ -3,18 +3,18 @@ nu = 0.3     #
 #gc = 2.7     #KJ/m2 = MPa.mm
 #l = 0.04    #mm
 
-umax = 0.2
-period = 0.00001
-num_cycle = 3800000
+umax = 0.02
+period = 0.01
+num_cycle = 40000
 end_time = ${fparse period * num_cycle}
-deltat = ${fparse 100000 * period} 
+#deltat = ${fparse 100 * period} 
 [GlobalParams]
   displacements = 'disp_x disp_y disp_z'
 []
 [MultiApps]
   [crack]
     type = TransientMultiApp
-    input_files = 'MeanLoad3Dcut_f.i'
+    input_files = 'AD_3Dcut_f.i'
   []
 []
 
@@ -95,11 +95,41 @@ deltat = ${fparse 100000 * period}
 
 [Mesh]
   [gen]
-    type = FileMeshGenerator
-    file = '../../mesh/bar_mesh/bar_cut3.e'
+    type = GeneratedMeshGenerator
+    dim = 3
+    nx = 20#160
+    ny = 20#32
+    nz = 10
+    xmin = 40
+    xmax = 60#
+    ymax = 20 #
+    zmax = 10
   []
 []
 
+[Adaptivity]
+  marker = marker
+  initial_marker = marker
+  initial_steps = 2
+  stop_time = 0
+  max_h_level = 2
+  [Markers]
+    [marker]
+      type = RotatedBoxMarker
+      cx = 50
+      cy = 10
+      cz = 5
+      lx = 3.8
+      ly = 22
+      lz = 20
+      angle_z = 0
+      angle_y = -47.5
+      angle_x = 0
+      inside = REFINE
+      outside = DO_NOTHING
+    []
+  []
+[]
 
 [ICs]
   [init_d_box]
@@ -108,7 +138,7 @@ deltat = ${fparse 100000 * period}
     cx = '50'
     cy = '16'
     cz = '5'
-    lx = '0.16'
+    lx = '0.25'
     ly = '11'
     lz = '20'
     angle_z = '0'
@@ -328,14 +358,14 @@ deltat = ${fparse 100000 * period}
   nl_rel_tol = 1e-6
   nl_abs_tol = 1e-7
 
-  #[./TimeStepper]
-  #  type = IterationAdaptiveDT
-  #  dt = 5e-5
-  #  optimal_iterations = 12
-  #  cutback_factor = 0.3 
-  #  growth_factor = 1.25
-  #[../]
-  dt = ${deltat}
+  [./TimeStepper]
+    type = IterationAdaptiveDT
+    dt = 5e-5
+    optimal_iterations = 12
+    cutback_factor = 0.3 
+    growth_factor = 1.25
+  [../]
+  #dt = ${deltat}
   end_time = ${end_time}
   #num_steps=6
   fixed_point_max_its = 12
@@ -351,5 +381,5 @@ deltat = ${fparse 100000 * period}
   exodus = true
   #perf_graph = true
   csv = true
-  time_step_interval = 1
+  time_step_interval = 4
 []

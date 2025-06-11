@@ -2,9 +2,9 @@
   [gen]
     type = GeneratedMeshGenerator
     dim = 3
-    nx = 22#160
-    ny = 22#32
-    nz = 11
+    nx = 20#160
+    ny = 20#32
+    nz = 10
     xmin = 40
     xmax = 60#
     ymax = 20 #
@@ -43,7 +43,7 @@
     cx = '50'
     cy = '16'
     cz = '5'
-    lx = '0.15'
+    lx = '0.25'
     ly = '11'
     lz = '20'
     angle_z = '0'
