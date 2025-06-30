@@ -1,7 +1,7 @@
 E = 21e4 #MPa # 210 GPa
 nu = 0.3     #
 gc = 2.7     #KJ/m2 = MPa. mm
-l = 0.04   #mm
+l = 0.1   #mm
 
 xi = 0#1
 C0 = 2#2.666667
@@ -15,33 +15,46 @@ n=0.5
   [gen]
     type = GeneratedMeshGenerator
     dim = 3
-    nx = 20#160
-    ny = 20#32
-    nz = 10
-    xmin = 40
-    xmax = 60#
+    nx = 10#160
+    ny = 10#32
+    nz = 5
+    xmax = 20#
     ymax = 20 #
     zmax = 10
+  []
+  [fix_node1]
+      type = BoundingBoxNodeSetGenerator
+      input = gen
+      bottom_left = '-0.1 -0.1 -0.1'
+      top_right = '0.0001 0.0001 0.0001'
+      new_boundary = 'fix_node1'
+  []
+  [fix_node2]
+      type = BoundingBoxNodeSetGenerator
+      input = fix_node1
+      bottom_left = '19.999 19.999 9.999'
+      top_right = '20.0001 20.0001 20.0001'
+      new_boundary = 'fix_node2'
   []
 []
 
 [Adaptivity]
   marker = marker
   initial_marker = marker
-  initial_steps = 2
+  initial_steps = 3
   stop_time = 0
-  max_h_level = 2
+  max_h_level = 3
   [Markers]
     [marker]
       type = RotatedBoxMarker
-      cx = 50
+      cx = 10
       cy = 10
       cz = 5
-      lx = 3.8
+      lx = 6
       ly = 22
       lz = 20
       angle_z = 0
-      angle_y = -47.5
+      angle_y = -40
       angle_x = 0
       inside = REFINE
       outside = DO_NOTHING
@@ -53,10 +66,10 @@ n=0.5
   [init_d_box]
     type = MultiRotBoundingBoxIC
     variable = d
-    cx = '50'
+    cx = '10'
     cy = '16'
     cz = '5'
-    lx = '0.25'
+    lx = '0.28'
     ly = '11'
     lz = '20'
     angle_z = '0'
