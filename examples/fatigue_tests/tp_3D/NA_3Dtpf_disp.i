@@ -349,7 +349,7 @@ end_time = ${fparse period * num_cycle}
   [../]
   #dt = ${deltat}
   end_time = ${end_time}
-  num_steps=2
+  #num_steps=2
   fixed_point_max_its = 25
   nl_max_its = 25
   l_max_its = 20
@@ -359,9 +359,9 @@ end_time = ${fparse period * num_cycle}
 []
 
 [Outputs]
-  file_base=three_points3D
+  file_base=three_points_fatigue_3D
   exodus = true
   #perf_graph = true
   csv = true
-  time_step_interval = 2
+  time_step_interval = 4
 []

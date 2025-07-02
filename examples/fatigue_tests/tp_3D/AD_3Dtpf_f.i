@@ -1,7 +1,7 @@
 E = 21e4 #MPa # 210 GPa
 nu = 0.3     #
 gc = 2.7     #KJ/m2 = MPa. mm
-l = 0.4   #mm
+l = 0.5   #mm
 
 xi = 0#1
 C0 = 2#2.666667
