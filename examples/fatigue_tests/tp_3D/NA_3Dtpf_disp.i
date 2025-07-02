@@ -215,7 +215,7 @@ end_time = ${fparse period * num_cycle}
     type = FunctionDirichletBC
     boundary = FRONT_SUP
     variable = disp_z
-    function = compression
+    function = ${fparse -1*umax}
   [../]
   #[./FRONT_SUPx]
   #  type = DirichletBC
