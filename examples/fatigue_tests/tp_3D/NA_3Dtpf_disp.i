@@ -2,7 +2,7 @@ E = 21e4 #MPa= 210 GPa
 nu = 0.3     #
 #gc = 2.7     #KJ/m2 = MPa.mm
 
-umax = 0.005
+umax = 0.0005
 period = 0.001
 num_cycle = 30000
 end_time = ${fparse period * num_cycle}
@@ -34,7 +34,7 @@ end_time = ${fparse period * num_cycle}
   type = MultiAppCopyTransfer #MultiAppGeometricInterpolationTransfer# MultiAppCopyTransfer #
   to_multi_app = 'crack'
   source_variable = 'disp_z'
-  variable = 'disp_z'
+  variable = 'disp_z'                                                                     
   []
   [to_CLA]
     type = MultiAppCopyTransfer
@@ -112,7 +112,7 @@ end_time = ${fparse period * num_cycle}
       cx = 70
       cy = 2.5
       cz = 10
-      lx = 15
+      lx = 18
       ly = 20
       lz = 50
       angle_z = 0
