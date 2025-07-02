@@ -4,7 +4,7 @@ nu = 0.3     #
 
 umax = 0.005
 period = 0.001
-num_cycle = 15000
+num_cycle = 30000
 end_time = ${fparse period * num_cycle}
 #deltat = ${fparse 100 * period} 
 [GlobalParams]
@@ -13,7 +13,7 @@ end_time = ${fparse period * num_cycle}
 [MultiApps]
   [crack]
     type = TransientMultiApp
-    input_files = 'AD_3Dcut_f.i'
+    input_files = 'AD_3Dtpf_f.i'
   []
 []
 
@@ -349,7 +349,7 @@ end_time = ${fparse period * num_cycle}
   [../]
   #dt = ${deltat}
   end_time = ${end_time}
-  #num_steps=6
+  num_steps=2
   fixed_point_max_its = 25
   nl_max_its = 25
   l_max_its = 20
