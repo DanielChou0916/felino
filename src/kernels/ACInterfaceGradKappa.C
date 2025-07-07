@@ -14,9 +14,16 @@ ACInterfaceGradKappa::validParams()
                         "The mobility is a function of any MOOSE variable (if "
                         "this is set to false L must be constant over the "
                         "entire domain!)");
+  params.addParam<bool>("use_grad_kappa",
+                        false,
+                        "Set to false if L is constant over the domain.");
   params.addCoupledVar("grad_kappa_x", "AuxVariable for ∂κ/∂x");
   params.addCoupledVar("grad_kappa_y", "AuxVariable for ∂κ/∂y");
-  params.addCoupledVar("grad_kappa_z", "AuxVariable for ∂κ/∂z (only in 3D)");                        
+  params.addCoupledVar("grad_kappa_z", "AuxVariable for ∂κ/∂z (only in 3D)");  
+  params.addParam<bool>("use_anisotropic_matrix",
+                        false,
+                        "Set to false for isotropic PFF");  
+  params.addParam<MaterialPropertyName>("anisotropic_matrix_name", "A", "The anisotropic matrix used with the kernel");                    
   return params;
 }
 
@@ -33,9 +40,15 @@ ACInterfaceGradKappa::ACInterfaceGradKappa(const InputParameters & parameters)
     _d2Ldarg2(_n_args),
     _dkappadarg(_n_args),
     _gradarg(_n_args),
-    _grad_kappa_x(coupledValue("grad_kappa_x")),
-    _grad_kappa_y(coupledValue("grad_kappa_y")),
-    _grad_kappa_z(parameters.isParamValid("grad_kappa_z") ? &coupledValue("grad_kappa_z") : nullptr)
+    _use_grad_kappa(getParam<bool>("use_grad_kappa")),
+    _grad_kappa_x((_use_grad_kappa && parameters.isParamValid("grad_kappa_x"))
+                  ? &coupledValue("grad_kappa_x"): nullptr),
+    _grad_kappa_y((_use_grad_kappa && parameters.isParamValid("grad_kappa_y"))
+                  ? &coupledValue("grad_kappa_y"): nullptr),
+    _grad_kappa_z((_use_grad_kappa && parameters.isParamValid("grad_kappa_z"))
+                  ? &coupledValue("grad_kappa_z"): nullptr),
+    _use_anisotropic_matrix(getParam<bool>("use_anisotropic_matrix")),// ✅ 2025/07/06
+    _A_ptr((nullptr))// ✅ 2025/07/06
 {
   // Get mobility and kappa derivatives and coupled variable gradients
   for (unsigned int i = 0; i < _n_args; ++i)
@@ -63,6 +76,26 @@ ACInterfaceGradKappa::ACInterfaceGradKappa(const InputParameters & parameters)
     for (unsigned int j = 0; j < _n_args; ++j)
       _d2Ldarg2[i][j] = &getMaterialPropertyDerivative<Real>("mob_name", i, j);
   }
+// constructor
+  if (_use_grad_kappa && (!parameters.isParamValid("grad_kappa_x") || !parameters.isParamValid("grad_kappa_y")))
+  {
+    if (processor_id() == 0)
+      mooseWarning("use_grad_kappa is true, but grad_kappa_x or grad_kappa_y not provided → skipped");
+  }
+//anisotropic matrix A
+  if (_use_anisotropic_matrix)// ✅ 2025/07/06
+  { 
+    const std::string & name = getParam<MaterialPropertyName>("anisotropic_matrix_name");
+    if (hasMaterialProperty<RankTwoTensor>(name))
+      {
+        mooseInfo("Anisotropic matrix loaded and applied in residual");
+        _A_ptr = &getMaterialProperty<RankTwoTensor>(name);
+      }
+    else if (processor_id() == 0)
+      mooseWarning("Anisotropic matrix material '", name, "' not found. Falling back to identity.");
+  }
+  else
+    mooseInfo("Use isotropic PFF!");
 }
 
 void
@@ -102,31 +135,32 @@ ACInterfaceGradKappa::kappaNablaLPsi()
 RealGradient
 ACInterfaceGradKappa::gradKappa()
 {
-  // Initialize all components to zero (VectorValue default ctor does this)
-  RealGradient g;
+  RealGradient g; // default (0,0,0)
 
-  // x‐component
-  g(0) = _grad_kappa_x[_qp];
-  // y‐component
-  g(1) = _grad_kappa_y[_qp];
+  if (_use_grad_kappa)
+  {
+    mooseInfo("use_grad_kappa = true");
+    if (_grad_kappa_x && _grad_kappa_y)
+      {
+      g(0) = (*_grad_kappa_x)[_qp];
+      g(1) = (*_grad_kappa_y)[_qp];
 
-#if DIM == 3
-  // z‐component (only in 3D)
-  if (_grad_kappa_z)
-    g(2) = (*_grad_kappa_z)[_qp];
-#endif
-
+      if (LIBMESH_DIM == 3 && _grad_kappa_z)
+        g(2) = (*_grad_kappa_z)[_qp];
+      mooseInfo("grad_kappa loaded and applied in residual");
+      }
+  }
   return g;
 }
-
 
 Real
 ACInterfaceGradKappa::computeQpResidual()
 {
-  Real r = _grad_u[_qp] * kappaNablaLPsi();
+  RankTwoTensor A = (_use_anisotropic_matrix && _A_ptr) ? (*_A_ptr)[_qp] : RankTwoTensor::initIdentity;// ✅ 2025/07/06
+  Real r = (A* _grad_u[_qp]) * kappaNablaLPsi();
   RealGradient gk = gradKappa();
   // -(∇κ · ∇u) * L * test
-  r -= (gk * _grad_u[_qp]) * _L[_qp] * _test[_i][_qp];
+  r -= (gk * (A* _grad_u[_qp])) * _L[_qp] * _test[_i][_qp];
   return r;
 }
 
@@ -176,15 +210,15 @@ ACInterfaceGradKappa::computeQpJacobian()
   //   a) ∇u → ∇φ_j
   //   b) L  → dL/dη
   // --------------------------------------------------------------------------
-
+  RankTwoTensor A = (_use_anisotropic_matrix && _A_ptr) ? (*_A_ptr)[_qp] : RankTwoTensor::initIdentity;// ✅ 2025/07/06
   // build ∇κ vector from coupled AuxVariables
   RealGradient gk = gradKappa();
 
   // derivative of ∇u term: gk·∇φ_j
-  Real d_res_grad_u = (gk * _grad_phi[_j][_qp]) * _L[_qp];
+  Real d_res_grad_u = gk* (A * _grad_phi[_j][_qp]) * _L[_qp];// ✅ 2025/07/06
 
   // derivative of L term: gk·∇u  times dL/dη
-  Real d_res_L      = (gk * _grad_u[_qp])     * _dLdop[_qp];
+  Real d_res_L      = gk * (A * _grad_u[_qp])     * _dLdop[_qp];// ✅ 2025/07/06
 
   // combine both and apply the test function
   Real extra = -(d_res_grad_u + d_res_L) * _test[_i][_qp];
@@ -192,7 +226,8 @@ ACInterfaceGradKappa::computeQpJacobian()
   // --------------------------------------------------------------------------
   // 4) assemble full Jacobian: original + new grad(κ) part
   // --------------------------------------------------------------------------
-  return _grad_phi[_j][_qp] * kappaNablaLPsi()  // from original term
+  
+  return (_grad_phi[_j][_qp]) * (A * kappaNablaLPsi())  // from original term// ✅ 2025/07/06
        + _grad_u[_qp]       * dsum              // from original term
        + extra;                                 // from grad(κ) term
 }
@@ -239,11 +274,14 @@ ACInterfaceGradKappa::computeQpOffDiagJacobian(unsigned int jvar)
   // 2) New grad(κ) term: residual had –(∇κ·∇u) * L * test
   //    Its derivative w.r.t. a coupled var 'arg' only enters via L
   // --------------------------------------------------------------------------
-  RealGradient gk = gradKappa();                                   // build ∇κ
-  Real extra = - (                                         
-      (gk * _grad_u[_qp])                                     // ∇κ·∇u
-    * (*_dLdarg[cvar])[_qp]                                   //  * ∂L/∂ arg
-    * _test[_i][_qp] );                                        //  * test
+  RealGradient gk = gradKappa();
+  RankTwoTensor A = (_use_anisotropic_matrix && _A_ptr) ? (*_A_ptr)[_qp] : RankTwoTensor::initIdentity;// ✅ 2025/07/06
+  
+  Real extra = -(
+      (gk * (A * _grad_u[_qp]))       // ∇κ·(A·∇u)
+    * (*_dLdarg[cvar])[_qp]           // ∂L/∂arg
+    * _test[_i][_qp]
+  );// ✅ 2025/07/06
 
   return jac + extra;
 }

@@ -1,0 +1,8 @@
+1. grad_kappa_disp and grad_kappa_f : SENT test for ICLA fatigue (Auto Differentiation)
+
+
+2. no_grad_kappa_disp and no_grad_kappa_f : SENT test for ICLA fatigue, 
+without accounting gradient of fatigue degradation in residual.(Auto Differentiation)
+
+
+3. NA_grad_kappa_disp and NA_grad_kappa_f : Non auto diff version of 1.

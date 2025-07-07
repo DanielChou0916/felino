@@ -1,0 +1,7 @@
+Test the fatigue behavior under heating process.
+Losely coupling is used for all systems, i.e., the residual terms for displacement, temperature and damage are calculated individually.
+Interactions between physics systems only exist in material parameters.
+
+1. Temperature variation is 700K, which is set in fatigue_load_T.
+
+2. Max temperature affects Gc, it's assigned in _disp, and _f files. 

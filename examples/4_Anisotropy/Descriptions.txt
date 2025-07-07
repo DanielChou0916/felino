@@ -1,0 +1,6 @@
+A 2D anisotropic simulation is included,
+
+1. AD stands for auto differentiation, NA means non-AD version.
+
+2. The metal is assumed to have weak plan with 45 deg from x-axis,
+hence, the normal vector is n = [-0.70710678, 0.70710678, 0]

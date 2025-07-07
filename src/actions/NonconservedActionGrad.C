@@ -39,7 +39,7 @@ NonconservedActionGrad::validParams()
   params.deprecateCoupledVar("args", "coupled_variables", "02/27/2024");
   params.addRequiredParam<MaterialPropertyName>(
       "free_energy", "Base name of the free energy function F defined in a free energy material");
-  params.addParam<MaterialPropertyName>("kappa", "kappa_op", "The kappa used with the kernel");
+  params.addParam<MaterialPropertyName>("kappa", "kappa", "The kappa used with the kernel");
   params.addParam<bool>("variable_mobility",
                         true,
                         "The mobility is a function of any MOOSE variable (if "
@@ -47,10 +47,12 @@ NonconservedActionGrad::validParams()
                         "entire domain!)");
   params.addParam<std::vector<SubdomainName>>(
       "block", {}, "Block restriction for the variables and kernels");
-  params.addParam<bool>("use_grad_kappa", false, "If true, use ADACInterfaceGradKappa instead of ADACInterface");// ✅// ✅
+  params.addParam<bool>("use_grad_kappa", false, "If true, include gradient of material parameter in residual");// ✅// ✅
   params.addCoupledVar("grad_kappa_x", "Gradient of kappa in x direction");// ✅// ✅
   params.addCoupledVar("grad_kappa_y", "Gradient of kappa in y direction");// ✅// ✅
   params.addCoupledVar("grad_kappa_z", "Gradient of kappa in z direction (only for 3D)");  // ✅// ✅
+  params.addParam<bool>("use_anisotropic_matrix", false, "If true, load anisotropic director in ACInterface kernel");// ✅2025/07/06
+  params.addParam<MaterialPropertyName>("anisotropic_matrix", "A", "The name of anisotropic matrix");// ✅2025/07/06
   return params;
 }
 
@@ -114,12 +116,17 @@ NonconservedActionGrad::act()
     else
       kernel_type = "ACInterface";// ✅
     
+    // Add ACInterface kernel
+    kernel_type = "ACInterfaceGradKappa";
     kernel_name = _var_name + "_" + kernel_type;
     InputParameters params3 = _factory.getValidParams(kernel_type);
     params3.set<NonlinearVariableName>("variable") = _var_name;
     params3.set<MaterialPropertyName>("mob_name") = getParam<MaterialPropertyName>("mobility");
     params3.set<MaterialPropertyName>("kappa_name") = getParam<MaterialPropertyName>("kappa");
     params3.set<bool>("variable_L") = getParam<bool>("variable_mobility");
+    params3.set<bool>("use_grad_kappa") = getParam<bool>("use_grad_kappa"); // ✅ 2025/07/06
+    params3.set<bool>("use_anisotropic_matrix") = getParam<bool>("use_anisotropic_matrix"); // ✅ 2025/07/06
+    params3.set<MaterialPropertyName>("anisotropic_matrix_name") = getParam<MaterialPropertyName>("anisotropic_matrix");
     params3.applyParameters(parameters());
 
     _problem->addKernel(kernel_type, kernel_name, params3);

@@ -58,7 +58,11 @@ protected:
   /// Gradients for all coupled variables
   std::vector<const VariableGradient *> _gradarg;
   /// gradient of kappa in each direction
-  const VariableValue & _grad_kappa_x;
-  const VariableValue & _grad_kappa_y;
+  const bool _use_grad_kappa;
+  const VariableValue * _grad_kappa_x;
+  const VariableValue * _grad_kappa_y;
   const VariableValue * _grad_kappa_z;
+
+  const bool _use_anisotropic_matrix;// ✅ 2025/07/06
+  const MaterialProperty<RankTwoTensor> * _A_ptr;// ✅ 2025/07/06
 };

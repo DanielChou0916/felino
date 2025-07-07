@@ -27,8 +27,9 @@ protected:
   const ADMaterialProperty<Real> & _kappa;
 
   /// Gradient of kappa
-  const VariableValue & _grad_kappa_x;
-  const VariableValue & _grad_kappa_y;
+  const bool _use_grad_kappa;
+  const VariableValue * _grad_kappa_x;
+  const VariableValue * _grad_kappa_y;
   const VariableValue * _grad_kappa_z;
   
 
@@ -46,4 +47,7 @@ protected:
 
   /// Gradients of coupled variables
   std::vector<const ADVariableGradient *> _gradarg;
+
+  const bool _use_anisotropic_matrix;// ✅ 2025/07/06
+  const ADMaterialProperty<RankTwoTensor> * _A_ptr;// ✅ 2025/07/06
 };

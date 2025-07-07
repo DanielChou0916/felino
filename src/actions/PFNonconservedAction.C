@@ -1,4 +1,4 @@
-#include "ADNonconservedAction.h"
+#include "PFNonconservedAction.h"
 
 // MOOSE includes
 #include "Conversion.h"
@@ -9,11 +9,11 @@
 
 #include "libmesh/string_to_enum.h"
 
-registerMooseAction("felinoApp", ADNonconservedAction, "add_variable");// ✅
-registerMooseAction("felinoApp", ADNonconservedAction, "add_kernel");// ✅
+registerMooseAction("felinoApp", PFNonconservedAction, "add_variable");// ✅
+registerMooseAction("felinoApp", PFNonconservedAction, "add_kernel");// ✅
 
 InputParameters
-ADNonconservedAction::validParams()
+PFNonconservedAction::validParams()
 {
   InputParameters params = Action::validParams();
   params.addClassDescription(
@@ -53,10 +53,11 @@ ADNonconservedAction::validParams()
   params.addCoupledVar("grad_kappa_z", "Gradient of kappa in z direction (only for 3D)");  // ✅// ✅
   params.addParam<bool>("use_anisotropic_matrix", false, "If true, load anisotropic director in ACInterface kernel");// ✅2025/07/06
   params.addParam<MaterialPropertyName>("anisotropic_matrix", "A", "The name of anisotropic matrix");// ✅2025/07/06
+  params.addParam<bool>("use_automatic_differentiation", false, "If true, select AD kernels");// ✅2025/07/06
   return params;
 }
 
-ADNonconservedAction::ADNonconservedAction(const InputParameters & params)
+PFNonconservedAction::PFNonconservedAction(const InputParameters & params)
   : Action(params),
     _var_name(name()),
     _fe_type(Utility::string_to_enum<Order>(getParam<MooseEnum>("order")),
@@ -65,7 +66,7 @@ ADNonconservedAction::ADNonconservedAction(const InputParameters & params)
 }
 
 void
-ADNonconservedAction::act()
+PFNonconservedAction::act()
 {
   //
   // Add variable
@@ -81,47 +82,42 @@ ADNonconservedAction::act()
     // Create nonconserved variable
     _problem->addVariable(type, _var_name, var_params);
   }
-
   //
   // Add Kernels
   //
   else if (_current_task == "add_kernel")
-  {
+  { 
+    bool use_ad = getParam<bool>("use_automatic_differentiation");
+    const std::string td_kernel  = use_ad ? "ADTimeDerivative" : "TimeDerivative";
+    const std::string ac_kernel  = use_ad ? "ADAllenCahn" : "AllenCahn";
+    const std::string intf_kernel = use_ad ? "ADACInterfaceGradKappa" : "ACInterfaceGradKappa";   
     // Add time derivative kernel
-    std::string kernel_type = "ADTimeDerivative";// ✅
-
-    std::string kernel_name = _var_name + "_" + kernel_type;
-    InputParameters params1 = _factory.getValidParams(kernel_type);
+    std::string kernel_name = _var_name + "_" + td_kernel;
+    InputParameters params1 = _factory.getValidParams(td_kernel);
     params1.set<NonlinearVariableName>("variable") = _var_name;
     params1.applyParameters(parameters());
-
-    _problem->addKernel(kernel_type, kernel_name, params1);
+    _problem->addKernel(td_kernel, kernel_name, params1);
 
     // Add AllenCahn kernel
-    kernel_type = "ADAllenCahn";// ✅
-
-    kernel_name = _var_name + "_" + kernel_type;
-    InputParameters params2 = _factory.getValidParams(kernel_type);
+    kernel_name = _var_name + "_" + ac_kernel;
+    InputParameters params2 = _factory.getValidParams(ac_kernel);
     params2.set<NonlinearVariableName>("variable") = _var_name;
     params2.set<MaterialPropertyName>("mob_name") = getParam<MaterialPropertyName>("mobility");
     params2.set<MaterialPropertyName>("f_name") = getParam<MaterialPropertyName>("free_energy");
     params2.applyParameters(parameters());
-
-    _problem->addKernel(kernel_type, kernel_name, params2);
+    _problem->addKernel(ac_kernel, kernel_name, params2);
 
     // Add ACInterface kernel
-    kernel_type = "ADACInterfaceGradKappa";
-    kernel_name = _var_name + "_" + kernel_type;
-    InputParameters params3 = _factory.getValidParams(kernel_type);
+    kernel_name = _var_name + "_" + intf_kernel;
+    InputParameters params3 = _factory.getValidParams(intf_kernel);
     params3.set<NonlinearVariableName>("variable") = _var_name;
     params3.set<MaterialPropertyName>("mob_name") = getParam<MaterialPropertyName>("mobility");
     params3.set<MaterialPropertyName>("kappa_name") = getParam<MaterialPropertyName>("kappa");
     params3.set<bool>("variable_L") = getParam<bool>("variable_mobility");
-    params3.set<bool>("use_grad_kappa") = getParam<bool>("use_grad_kappa"); // ✅ 2025/07/06
-    params3.set<bool>("use_anisotropic_matrix") = getParam<bool>("use_anisotropic_matrix"); // ✅ 2025/07/06
+    params3.set<bool>("use_grad_kappa") = getParam<bool>("use_grad_kappa");
+    params3.set<bool>("use_anisotropic_matrix") = getParam<bool>("use_anisotropic_matrix");
     params3.set<MaterialPropertyName>("anisotropic_matrix_name") = getParam<MaterialPropertyName>("anisotropic_matrix");
     params3.applyParameters(parameters());
-
-    _problem->addKernel(kernel_type, kernel_name, params3);
+    _problem->addKernel(intf_kernel, kernel_name, params3);
   }
 }
