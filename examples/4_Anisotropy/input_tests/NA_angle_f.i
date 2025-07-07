@@ -11,7 +11,7 @@ alpha_critical = 62.5 #MPa
 R=0.5
 n=0.5
 [Mesh]
-  file = ../mesh_files/single_notch_square.msh
+  file = ../../mesh_files/single_notch_square.msh
   uniform_refine = 0
   skip_partitioning = true
   construct_side_list_from_node_list=true
@@ -112,8 +112,9 @@ n=0.5
 [Materials]
   [./anisotropy]
     type = AnisotropicDirector
-    normal = "-0.70710678 0.70710678 0"
-    coef = 30
+    input_type = xy_angle
+    xy_angle_deg = 45.0
+    coef = 30.0
     output_name = A_matrix
   []
   [./uncracked_strain]

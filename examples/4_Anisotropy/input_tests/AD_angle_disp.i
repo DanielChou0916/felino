@@ -5,7 +5,7 @@ l = 0.016    #mm
 
 umax = 0.0005
 period = 0.001
-num_cycle = 40000
+num_cycle = 38000
 end_time = ${fparse period * num_cycle}
 deltat = ${fparse 1000 * period} 
 [GlobalParams]
@@ -14,7 +14,7 @@ deltat = ${fparse 1000 * period}
 [MultiApps]
   [crack]
     type = TransientMultiApp
-    input_files = 'NA_f.i'
+    input_files = 'AD_angle_f.i'
   []
 []
 
@@ -82,7 +82,7 @@ deltat = ${fparse 1000 * period}
 []
 
 [Mesh]
-  file = ../mesh_files/single_notch_square.msh
+  file = ../../mesh_files/single_notch_square.msh
   uniform_refine = 0
   skip_partitioning = true
   construct_side_list_from_node_list=true
@@ -94,7 +94,7 @@ deltat = ${fparse 1000 * period}
     strain = FINITE
     incremental = true
     additional_generate_output = 'stress_xx stress_yy stress_xy'
-    use_automatic_differentiation=false
+    use_automatic_differentiation=true
     strain_base_name = uncracked
     decomposition_method = EigenSolution
   [../]
@@ -178,22 +178,22 @@ deltat = ${fparse 1000 * period}
 
 [Materials]
   [./pfbulkmat]
-    type = GenericConstantMaterial
+    type = ADGenericConstantMaterial
     prop_names =  'gc     l     '
     prop_values = '${gc}  ${l}  ' #Gc:MPa mm
   [../]
   [./elasticity_tensor]
-    type = ComputeIsotropicElasticityTensor #Constitutive law here
+    type = ADComputeIsotropicElasticityTensor #Constitutive law here
     poissons_ratio = ${nu}
     youngs_modulus = ${E} #MPa
     base_name = uncracked
   [../]
   [./trial_stress]
-    type = ComputeFiniteStrainElasticStress
+    type = ADComputeFiniteStrainElasticStress
     base_name = uncracked
   [../]
   [./degradation] # Define w(d)
-    type = DerivativeParsedMaterial
+    type = ADDerivativeParsedMaterial
     property_name = degradation
     coupled_variables = 'd'
     expression = '(1-d)^p*(1-k)+k'
@@ -202,7 +202,7 @@ deltat = ${fparse 1000 * period}
     derivative_order = 2
   [../]
   [./cracked_stress]
-    type = ComputePFFStress
+    type = ADComputePFFStress
     c = d
     E_name = E_el
     D_name = degradation
@@ -211,6 +211,12 @@ deltat = ${fparse 1000 * period}
     uncracked_base_name = uncracked
     finite_strain_model = true
   [../]
+  #[./anisotropy]
+  #  type = ADAnisotropicDirector
+  #  normal = "-0.70710678 0.70710678 0"
+  #  output_name = A_matrix
+  #  outputs = exodus
+  #[]
 []
 
 [Postprocessors]
@@ -244,9 +250,9 @@ deltat = ${fparse 1000 * period}
     type = NodalExtremeValue
     variable = d
   [../]
-  #[./dt]
-  #  type = TimestepSize
-  #[../]
+  [./dt]
+    type = TimestepSize
+  [../]
   #[./z_n_nl_its]
   #  type = NumNonlinearIterations
   #  accumulate_over_step = true
@@ -293,6 +299,7 @@ deltat = ${fparse 1000 * period}
   #[../]
   dt = ${deltat}
   end_time = ${end_time}
+  dtmin = 1e-4
   num_steps=8
   fixed_point_max_its = 12
   nl_max_its = 16  
@@ -303,7 +310,7 @@ deltat = ${fparse 1000 * period}
 []
 
 [Outputs]
-  file_base=NA_weak_45_coef30
+  file_base=AD_weak45_angle_inp
   exodus = true
   #perf_graph = true
   csv = true

@@ -11,7 +11,7 @@ alpha_critical = 62.5 #MPa
 R=0.5
 n=0.5
 [Mesh]
-  file = ../mesh_files/single_notch_square.msh
+  file = ../../mesh_files/single_notch_square.msh  
   uniform_refine = 0
   skip_partitioning = true
   construct_side_list_from_node_list=true
@@ -27,7 +27,7 @@ n=0.5
     kappa = kappa_op
     mobility = L
     variable_mobility=false
-    use_automatic_differentiation = false
+    use_automatic_differentiation = true
     use_grad_kappa = true
     grad_kappa_x = dkappa_dx
     grad_kappa_y = dkappa_dy
@@ -75,23 +75,23 @@ n=0.5
 
 [AuxKernels]
   [./current_fatigue]
-    type = MaterialRealAux
+    type = ADMaterialRealAux
     variable = current_fatigue
     property = current_fatigue
   [../]
   [./bar_alpha]
-    type = MaterialRealAux
+    type = ADMaterialRealAux
     variable = bar_alpha
     property = bar_alpha
     execute_on = timestep_end
   [../]
   [./f_alpha]
-    type = MaterialRealAux
+    type = ADMaterialRealAux
     variable = f_alpha
     property = f_alpha
   [../]
   [./kappa_op]
-    type = MaterialRealAux
+    type = ADMaterialRealAux
     variable = kappa_op
     property = kappa_op
   [../]
@@ -111,39 +111,40 @@ n=0.5
 
 [Materials]
   [./anisotropy]
-    type = AnisotropicDirector
-    normal = "-0.70710678 0.70710678 0"
-    coef = 30
+    type = ADAnisotropicDirector
+    input_type = xy_angle
+    xy_angle_deg = 45.0
+    coef = 30.0
     output_name = A_matrix
   []
   [./uncracked_strain]
-    type = ComputeFiniteStrain
+    type = ADComputeFiniteStrain
     base_name = uncracked
   [../]
   [./trial_stress]
-    type = ComputeFiniteStrainElasticStress
+    type = ADComputeFiniteStrainElasticStress
     base_name = uncracked
   [../]
   [./pfbulkmat]
-    type = GenericConstantMaterial
+    type = ADGenericConstantMaterial
     prop_names =  'load_ratio  material_constant_n    alpha_critical'
     prop_values = '${R}        ${n}                   ${alpha_critical}' 
     #prop_names =  'alpha_critical'
     #prop_values = '${alpha_critical}' 
   [../]
   [./public_materials_forPF_model]
-    type = GenericConstantMaterial
+    type = ADGenericConstantMaterial
     prop_names =  'gc     l    xi    C0      L  ' 
     prop_values = '${gc}  ${l} ${xi} ${C0}   ${L}' #'0 2'#for AT2 # Or use '1 2.6666667' for AT1
   [../]
   [./elasticity_tensor]
-    type = ComputeIsotropicElasticityTensor #Constitutive law here
+    type = ADComputeIsotropicElasticityTensor #Constitutive law here
     poissons_ratio = ${nu}
     youngs_modulus = ${E} #MPa
     base_name = uncracked
   [../]
   [./degradation] # Define w(d)
-    type = DerivativeParsedMaterial
+    type = ADDerivativeParsedMaterial
     property_name = degradation
     coupled_variables = 'd'
     expression = '(1-d)^p*(1-k)+k'
@@ -152,7 +153,7 @@ n=0.5
     derivative_order = 2
   [../]
   [./local_fracture_energy] #Define psi_frac and alpha(d)
-    type = DerivativeParsedMaterial
+    type = ADDerivativeParsedMaterial
     property_name = local_fracture_energy
     coupled_variables = 'd'
     material_property_names = 'gc l xi C0 f_alpha'
@@ -160,7 +161,7 @@ n=0.5
     derivative_order = 2
   [../]
   [./fatigue_variable]
-    type = ComputeFatigueEnergy
+    type = ADComputeFatigueEnergy
     #energy_calculation = spectral_activation
     uncracked_base_name = uncracked
     finite_strain_model = true
@@ -172,19 +173,19 @@ n=0.5
     bar_psi_name = current_fatigue
   []
   [./fatigue_function]
-    type = ParsedMaterial
+    type = ADParsedMaterial
     material_property_names = 'bar_alpha alpha_critical'
     property_name = f_alpha
     expression = 'if(bar_alpha > alpha_critical, (2*alpha_critical/(bar_alpha + alpha_critical))^2, 1)'
   []  
   [./define_kappa]
-    type = ParsedMaterial
+    type = ADParsedMaterial
     material_property_names = 'gc l C0 f_alpha'
     property_name = kappa_op
     expression = '2 * gc * l / C0 * f_alpha'
   [../]
   [./cracked_stress]
-    type = ComputePFFStress
+    type = ADComputePFFStress
     c = d
     E_name = E_el
     D_name = degradation
@@ -194,7 +195,7 @@ n=0.5
     finite_strain_model = true
   [../]
   [./fracture_driving_energy]
-    type = DerivativeSumMaterial
+    type = ADDerivativeSumMaterial
     #block = 1
     coupled_variables = d
     sum_materials = 'E_el local_fracture_energy'

@@ -2,6 +2,7 @@
 
 #include "Material.h"
 #include "RankTwoTensor.h"
+#include "MooseEnum.h"
 
 /**
  * Generate anisotropic matrix A = I + coef * (I - n ⊗ n)
@@ -17,12 +18,21 @@ protected:
   virtual void computeQpProperties() override;
 
   /// Input: manually defined weak plane normal
-  const RealVectorValue _normal;
+  RealVectorValue _normal; // ❌ remove const
 
   /// Input: anisotropy scaling coefficient
   const Real _coef;
 
-  /// Output: directional tensor A
+  /// Output name
   const MaterialPropertyName _output_name;
+
+  /// Output: directional tensor A
   MaterialProperty<RankTwoTensor> & _directional_tensor;
+
+  /// Input mode
+  enum class input_type
+  {
+    normal_vector,
+    xy_angle
+  } _input_type;
 };

@@ -12,7 +12,7 @@ R=0.5
 n=0.5
 [Mesh]
   file = ../mesh_files/single_notch_square.msh  
-  uniform_refine = 1
+  uniform_refine = 0
   skip_partitioning = true
   construct_side_list_from_node_list=true
 []

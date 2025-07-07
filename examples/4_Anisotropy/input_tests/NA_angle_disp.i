@@ -14,7 +14,7 @@ deltat = ${fparse 1000 * period}
 [MultiApps]
   [crack]
     type = TransientMultiApp
-    input_files = 'NA_f.i'
+    input_files = 'NA_angle_f.i'
   []
 []
 
@@ -82,7 +82,7 @@ deltat = ${fparse 1000 * period}
 []
 
 [Mesh]
-  file = ../mesh_files/single_notch_square.msh
+  file = ../../mesh_files/single_notch_square.msh
   uniform_refine = 0
   skip_partitioning = true
   construct_side_list_from_node_list=true
@@ -303,7 +303,7 @@ deltat = ${fparse 1000 * period}
 []
 
 [Outputs]
-  file_base=NA_weak_45_coef30
+  file_base=NA_weak45_angle_inp
   exodus = true
   #perf_graph = true
   csv = true

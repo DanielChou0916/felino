@@ -4,3 +4,6 @@ A 2D anisotropic simulation is included,
 
 2. The metal is assumed to have weak plan with 45 deg from x-axis,
 hence, the normal vector is n = [-0.70710678, 0.70710678, 0]
+
+3. In the folder input_tests, 
+the anisotropic director accepts as input the counter-clockwise angle (measured from the x-axis) that defines the tangential direction of the weak plane.

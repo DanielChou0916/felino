@@ -83,7 +83,7 @@ deltat = ${fparse 1000 * period}
 
 [Mesh]
   file = ../mesh_files/single_notch_square.msh
-  uniform_refine = 1
+  uniform_refine = 0
   skip_partitioning = true
   construct_side_list_from_node_list=true
 []
@@ -300,7 +300,7 @@ deltat = ${fparse 1000 * period}
   dt = ${deltat}
   end_time = ${end_time}
   dtmin = 1e-4
-  num_steps=1
+  num_steps=8
   fixed_point_max_its = 12
   nl_max_its = 16  
   l_max_its = 20  
