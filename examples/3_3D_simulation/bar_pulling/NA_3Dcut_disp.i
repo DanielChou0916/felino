@@ -389,7 +389,7 @@ end_time = ${fparse period * num_cycle}
 []
 
 [Outputs]
-  file_base=NA_bar_3D_jump2
+  file_base=NA_bar_3D
   exodus = true
   #perf_graph = true
   csv = true
