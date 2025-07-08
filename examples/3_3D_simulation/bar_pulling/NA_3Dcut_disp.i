@@ -2,9 +2,9 @@ E = 21e4 #MPa= 210 GPa
 nu = 0.3     #
 #gc = 2.7     #KJ/m2 = MPa.mm
 
-umax = 0.01
-period = 0.0001
-num_cycle = 900000
+umax = 0.005
+period = 0.001
+num_cycle = 15000
 end_time = ${fparse period * num_cycle}
 #deltat = ${fparse 100 * period} 
 [GlobalParams]
@@ -13,13 +13,13 @@ end_time = ${fparse period * num_cycle}
 [MultiApps]
   [crack]
     type = TransientMultiApp
-    input_files = 'AD_3Dtpf_f.i'
+    input_files = 'AD_3Dcut_f.i'
   []
 []
 
 [Transfers]
   [to_disp_x]
-    type = MultiAppCopyTransfer 
+    type = MultiAppCopyTransfer #MultiAppGeometricInterpolationTransfer# MultiAppCopyTransfer #
     to_multi_app = 'crack'
     source_variable = 'disp_x'
     variable = 'disp_x'
@@ -31,10 +31,10 @@ end_time = ${fparse period * num_cycle}
     variable = 'disp_y'
   []
   [to_disp_z]
-  type = MultiAppCopyTransfer 
+  type = MultiAppCopyTransfer #MultiAppGeometricInterpolationTransfer# MultiAppCopyTransfer #
   to_multi_app = 'crack'
   source_variable = 'disp_z'
-  variable = 'disp_z'                                                                     
+  variable = 'disp_z'
   []
   [to_CLA]
     type = MultiAppCopyTransfer
@@ -94,29 +94,48 @@ end_time = ${fparse period * num_cycle}
 
 [Mesh]
   [gen]
-    type = FileMeshGenerator
-    file = ../mesh_files/three_points_metal.inp
+    type = GeneratedMeshGenerator
+    dim = 3
+    nx = 10#160
+    ny = 10#32
+    nz = 5
+    xmax = 20#
+    ymax = 20 #
+    zmax = 10
   []
-  construct_side_list_from_node_list=true
+  [fix_node1]
+      type = BoundingBoxNodeSetGenerator
+      input = gen
+      bottom_left = '-0.1 -0.1 -0.1'
+      top_right = '0.0001 0.0001 0.0001'
+      new_boundary = 'fix_node1'
+  []
+  [fix_node2]
+      type = BoundingBoxNodeSetGenerator
+      input = fix_node1
+      bottom_left = '19.999 19.999 9.999'
+      top_right = '20.0001 20.0001 20.0001'
+      new_boundary = 'fix_node2'
+  []
 []
 
 [Adaptivity]
   marker = marker
   initial_marker = marker
-  initial_steps = 2
+  initial_steps = 3
   stop_time = 0
-  max_h_level = 2
+  max_h_level = 3
   [Markers]
     [marker]
       type = RotatedBoxMarker
-      cx = 68
-      cy = 2.5
-      cz = 10
-      lx = 15
-      ly = 20
-      lz = 50
+      cx = 10
+      cy = 10
+      cz = 5
+      lx = 4.1
+      ly = 22
+      lz = 20
       angle_z = 0
-      angle_y = 0
+      angle_y = -38
       angle_x = 0
       inside = REFINE
       outside = DO_NOTHING
@@ -124,6 +143,23 @@ end_time = ${fparse period * num_cycle}
   []
 []
 
+[ICs]
+  [init_d_box]
+    type = MultiRotBoundingBoxIC
+    variable = d
+    cx = '10'
+    cy = '16'
+    cz = '5'
+    lx = '0.24'
+    ly = '11'
+    lz = '20'
+    angle_z = '0'
+    angle_y = '-45'
+    inside = '1'
+    outside = '0'
+    int_width = '0.001 '
+  [../]
+[]
 
 [Physics/SolidMechanics/QuasiStatic]
   [./All]
@@ -192,43 +228,37 @@ end_time = ${fparse period * num_cycle}
   [../]
 []
 
-[BCs]
-  [./BOTTOMy]
-    type = DirichletBC
-    boundary = BACK_SUP2
-    variable = disp_y
-    value = 0.0
-  [../]
-  [./BOTTOMx]
-    type = DirichletBC
-    boundary = BACK_SUP1
-    variable = disp_x
-    value = 0.0
-  [../]
-  [./BOTTOMz]
-    type = DirichletBC
-    boundary = 'BACK_SUP1 BACK_SUP2'
-    variable = disp_z
-    value = 0.0
-  [../]
-  [./FRONT_SUP_load]
+[BCs] # 2: top,   3:bottom
+  [right_cycle]
     type = FunctionDirichletBC
-    boundary = FRONT_SUP
-    variable = disp_z
-    function = ${fparse -1*umax}
-  [../]
-  #[./FRONT_SUPx]
-  #  type = DirichletBC
-  #  boundary = FRONT_SUP
-  #  variable = disp_x
-  #  value = 0.0
-  #[../]
-  #[./FRONT_SUPy]
-  #  type = DirichletBC
-  #  boundary = FRONT_SUP
-  #  variable = disp_y
-  #  value = 0.0
-  #[../]
+    variable = 'disp_x'
+    boundary = 'right'
+    ## It is not recommanded to set BC as explicit periodic function
+    ## this well  expose the simulation in no fatigue accumulation risk!
+    #function = '${umax} * 0.5 * (cos(2 * 3.1415926 * t / ${period}) + 1)'
+    function = '${umax}'
+  []
+  [left_cycle]
+    type = FunctionDirichletBC
+    variable = 'disp_x'
+    boundary = 'left'
+    ## It is not recommanded to set BC as explicit periodic function
+    ## this well  expose the simulation in no fatigue accumulation risk!
+    #function = '-1*${umax} * 0.5 * (cos(2 * 3.1415926 * t / ${period}) + 1)'
+    function = '-1*${umax}'
+  []
+  [yfix12]
+    type = DirichletBC
+    variable = 'disp_y'
+    boundary = 'fix_node1'
+    value = 0
+  []
+  [zfix12]
+    type = DirichletBC
+    variable = 'disp_z'
+    boundary = 'fix_node2'
+    value = 0
+  []
 []
 
 
@@ -282,15 +312,15 @@ end_time = ${fparse period * num_cycle}
     type = ElementExtremeValue
     variable = bar_alpha
   [../]
-  [./side_stress_zz]
+  [./side_stress_xx]
     type = SideAverageValue
-    variable = stress_zz
-    boundary = FRONT_SUP
+    variable = stress_xx
+    boundary = right
   [../]
-  [./av_disp_z]
-    type = AverageNodalVariableValue
-    variable = disp_z
-    boundary = FRONT_SUP#FRONT_SUP
+  [./av_disp_x]
+    type = SideAverageValue
+    variable = disp_x
+    boundary = right
   [../]
   [./crack_area]
     type = ElementIntegralVariablePostprocessor
@@ -350,18 +380,18 @@ end_time = ${fparse period * num_cycle}
   #dt = ${deltat}
   end_time = ${end_time}
   num_steps=1
-  fixed_point_max_its = 8
-  nl_max_its = 30
-  l_max_its = 25
+  fixed_point_max_its = 15
+  nl_max_its = 15
+  l_max_its = 18
   accept_on_max_fixed_point_iteration = true
   fixed_point_rel_tol = 1e-6
   fixed_point_abs_tol = 1e-7
 []
 
 [Outputs]
-  file_base=NA_tp3D
+  file_base=NA_bar_3D_jump2
   exodus = true
   #perf_graph = true
   csv = true
-  time_step_interval = 5
+  time_step_interval = 2
 []

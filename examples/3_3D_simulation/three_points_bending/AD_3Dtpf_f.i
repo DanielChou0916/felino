@@ -14,7 +14,7 @@ n=0.5
 [Mesh]
   [gen]
     type = FileMeshGenerator
-    file = ../mesh_files/three_points_metal.inp
+    file = ../../mesh_files/three_points_metal.inp
   []
   construct_side_list_from_node_list=true
 []

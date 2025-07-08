@@ -1,0 +1,16 @@
+Asymmetric pulling 3D fatigue test.
+
+Displacement can be either AD or non AD version, depends on user's demand.
+Damage sub-application is AD version.
+User may modify it to non AD if needed,
+In [Actions/PFNonconserved] block
+set ''use_automatic_differentiation = true'' to ''false''
+
+And then change all AD objects to non-AD, for instance,
+
+ADMaterialRealAux -> MaterialRealAux
+
+ADComputeFiniteStrain -> ComputeFiniteStrain
+
+
+and so on...
