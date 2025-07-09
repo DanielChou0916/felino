@@ -35,4 +35,5 @@ protected:
     normal_vector,
     xy_angle
   } _input_type;
+  const bool _normalize_director;
 };

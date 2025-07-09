@@ -17,7 +17,7 @@ AnisotropicDirector::validParams()
                         "Angle from x-axis in degrees (used if input_type = xy_angle)");
   params.addParam<Real>("coef", 1.0, "Intensity of anisotropy: A = I + coef*(I - n ⊗ n)");
   params.addParam<MaterialPropertyName>("output_name", "A", "Name of output RankTwoTensor A");
-
+  params.addParam<bool>("normalize_director", false, "If true, normalize anisotropic tensor A by its trace.");
   return params;
 }
 
@@ -26,7 +26,8 @@ AnisotropicDirector::AnisotropicDirector(const InputParameters & parameters)
     _coef(getParam<Real>("coef")),
     _output_name(getParam<MaterialPropertyName>("output_name")),
     _directional_tensor(declareProperty<RankTwoTensor>(_output_name)),
-    _input_type(getParam<MooseEnum>("input_type").getEnum<input_type>())
+    _input_type(getParam<MooseEnum>("input_type").getEnum<input_type>()),
+    _normalize_director(getParam<bool>("normalize_director"))
 {
   if (_input_type == input_type::xy_angle)
   {
@@ -43,5 +44,11 @@ AnisotropicDirector::computeQpProperties()
 {
   const RankTwoTensor I = RankTwoTensor::initIdentity;
   const RankTwoTensor n_outer = RankTwoTensor::selfOuterProduct(_normal.unit());
-  _directional_tensor[_qp] = I + _coef * (I - n_outer);
+  RankTwoTensor A = I + _coef * (I - n_outer);
+  if (_normalize_director)
+  {
+    const Real tr = A.trace();
+    A /= (tr / 3.0); // normalize so that trace(A) == 3
+  } 
+  _directional_tensor[_qp] = A;
 }
