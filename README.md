@@ -5,7 +5,7 @@ felino
 
 ### 📂 Materials
 
-#### 1️⃣ `ADComputePFFStress`
+#### 1️⃣ `ADComputePFFStress`/`ComputePFFStress`
 A general-purpose tool for calculating **damaged elastic energy** and **damaged stress** in phase-field fracture models.
 - Supports **finite strain** and **anisotropic materials**.
 - Offers options for **spectral decomposition** or no decomposition.
@@ -27,7 +27,7 @@ A general-purpose tool for calculating **damaged elastic energy** and **damaged 
 
 ---
 
-#### 2️⃣ `ADComputeFatigueEnergy`
+#### 2️⃣ `ADComputeFatigueEnergy`/`ComputeFatigueEnergy`
 Computes **fatigue energy** at the current step $\Psi_t$, along with its accumulated value $\bar{\alpha}_t$.
 
 - **Three approaches for energy calculation**:
@@ -103,6 +103,7 @@ Computes **fatigue energy** at the current step $\Psi_t$, along with its accumul
 
 #### 3️⃣ `Actions/PFNonconserved`
 Automates the setup of Kernels for solving the **Allen-Cahn equation**.
+- Use `use_automatic_differentiation = true` to activate automatic-differentiation(AD).
 - Use `use_grad_kappa = true` to include spatial gradients of material parameters when they are non-constant.
 - Gradient terms ($\nabla \kappa$) are handled via `AuxKernels` and `AuxVariables`.
 - Automatically detects mesh dimension (e.g., requires `grad_kappa_z` in 3D).
