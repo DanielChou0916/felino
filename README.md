@@ -101,23 +101,28 @@ Computes **fatigue energy** at the current step $\Psi_t$, along with its accumul
 
 ### 📂 Actions & Kernels
 
-#### 3️⃣ `Actions/ADNonconserved`
+#### 3️⃣ `Actions/PFNonconserved`
 Automates the setup of Kernels for solving the **Allen-Cahn equation**.
 - Use `use_grad_kappa = true` to include spatial gradients of material parameters when they are non-constant.
 - Gradient terms ($\nabla \kappa$) are handled via `AuxKernels` and `AuxVariables`.
 - Automatically detects mesh dimension (e.g., requires `grad_kappa_z` in 3D).
+- Anisotropic PFF is currently developed. Use `use_anisotropic_matrix = true` with its name on `anisotropic_matrix = [material_name]`.
+- The anisotropic matrix has to be defined in material block, otherwise it will turn back into isotropic PFF model.
 
 **Example Usage:**
 ```ini
-[Actions/ADNonconserved]
+[Actions/PFNonconserved]
   [./d]
     free_energy = F
     kappa = kappa_op
     mobility = L
-    variable_mobility = false
+    variable_mobility=false
+    use_automatic_differentiation = true
     use_grad_kappa = true
     grad_kappa_x = dkappa_dx
     grad_kappa_y = dkappa_dy
+    use_anisotropic_matrix = true
+    anisotropic_matrix = A_matrix
   [../]
 []
 ```
