@@ -14,7 +14,7 @@ deltat = ${fparse 100 * period}
 [MultiApps]
   [crack]
     type = TransientMultiApp
-    input_files = 'NA_grad_kappa_f.i'
+    input_files = 'NA_f.i'
   []
 []
 
@@ -82,7 +82,7 @@ deltat = ${fparse 100 * period}
 []
 
 [Mesh]
-  file = ../mesh_files/single_notch_square.msh
+  file = ../../mesh_files/single_notch_square.msh
   uniform_refine = 0
   skip_partitioning = true
   construct_side_list_from_node_list=true
@@ -293,7 +293,7 @@ deltat = ${fparse 100 * period}
   #[../]
   dt = ${deltat}
   end_time = ${end_time}
-  #num_steps=1
+  #num_steps=8
   fixed_point_max_its = 12
   nl_max_its = 16  
   l_max_its = 20  
@@ -303,7 +303,7 @@ deltat = ${fparse 100 * period}
 []
 
 [Outputs]
-  file_base=NA_mean_loadR05_ICLA
+  file_base=NA_isotropic_coef30
   exodus = true
   #perf_graph = true
   csv = true
