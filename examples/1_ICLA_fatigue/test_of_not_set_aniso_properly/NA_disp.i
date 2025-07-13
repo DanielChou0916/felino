@@ -312,5 +312,5 @@ deltat = ${fparse 100 * period}
   exodus = true
   #perf_graph = true
   csv = true
-  time_step_interval = 4
+  time_step_interval = 8
 []
