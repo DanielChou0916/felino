@@ -231,6 +231,11 @@ deltat = ${fparse 100 * period}
     variable = stress_yy
     boundary = 2
   [../]
+  [./bot_stress_yy]
+    type = SideAverageValue
+    variable = stress_yy
+    boundary = 3
+  [../]
   [./av_disp_y]
     type = SideAverageValue
     variable = disp_y
