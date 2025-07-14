@@ -1,6 +1,3 @@
-Warning: Strongly suggest user to use inputs in ''normalization_director_test''.
-As ansitropic director without normalization will strengthen the material(compared to isotropic case), which violates physical intuition.
-
 A 2D anisotropic simulation is included,
 
 1. AD stands for auto differentiation, NA means non-AD version.
@@ -8,5 +5,6 @@ A 2D anisotropic simulation is included,
 2. The metal is assumed to have weak plan with 45 deg from x-axis,
 hence, the normal vector is n = [-0.70710678, 0.70710678, 0]
 
-3. In the folder 2D_angle_input_tests, 
-the anisotropic director accepts as input the counter-clockwise angle (measured from the x-axis) that defines the tangential direction of the weak plane.
+90 degs as n = [1, 0, 0]
+
+0 degs as n = [0, 1, 0]

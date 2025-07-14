@@ -18,7 +18,7 @@ protected:
   virtual void computeQpProperties() override;
 
   /// Input: manually defined weak plane normal
-  RealVectorValue _normal; // ❌ remove const
+  RealVectorValue _normal;
 
   /// Input: anisotropy scaling coefficient
   const Real _coef;
@@ -35,5 +35,15 @@ protected:
     normal_vector,
     xy_angle
   } _input_type;
-  const bool _normalize_director;
+
+  /// Normalization mode
+  enum class norm_type
+  { 
+    factorial_norm,
+    trace_norm,
+    det_norm,
+    none
+  } _normalize_director;
+
+  const Real _factor;
 };

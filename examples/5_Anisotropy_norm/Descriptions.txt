@@ -1,0 +1,11 @@
+Set normalize_director = 
+1. trace_norm
+2. det_norm
+3. factorial_norm
+4. none
+
+To scale the anisotropic matrix A
+
+If not specified, the default mode is automatically: 
+normalize_director = factorial_norm
+factor = 0.01
