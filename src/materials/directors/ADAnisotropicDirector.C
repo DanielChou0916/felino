@@ -72,7 +72,7 @@ ADAnisotropicDirector::computeQpProperties()
   else if (_normalize_director == norm_type::factorial_norm)
   {
     mooseInfo("Manual scaling is used.");
-    A /= _factor;
+    A *= _factor;
   } 
 
   _directional_tensor[_qp] = A;
