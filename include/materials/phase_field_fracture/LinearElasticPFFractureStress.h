@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "ADGeoPFFractureStressBase.h"
+#include "PFFractureStressBase.h"
 #include "MooseEnum.h"
 #include "GuaranteeConsumer.h"
 
@@ -11,13 +11,13 @@
  * This class computes the stress and energy contribution for the
  * small strain Linear Elastic formulation of phase field fracture
  */
-class ADGeoLinearElasticPFFractureStress : public ADGeoPFFractureStressBase,
+class LinearElasticPFFractureStress : public PFFractureStressBase,
                                              public GuaranteeConsumer
 {
 public:
   static InputParameters validParams();
 
-  ADGeoLinearElasticPFFractureStress(const InputParameters & parameters);
+  LinearElasticPFFractureStress(const InputParameters & parameters);
 
   void initialSetup() override;
 
@@ -29,52 +29,37 @@ protected:
    * @param F_pos tensile part of total elastic energy
    * @param F_neg compressive part of total elastic energy
    */
-  void computeStrainSpectral(ADReal & F_pos, ADReal & F_neg);
+  void computeStrainSpectral(Real & F_pos, Real & F_neg);
 
   /**
    * Method to split elastic energy based on strain volumetric/deviatoric decomposition
    * @param F_pos tensile part of total elastic energy
    * @param F_neg compressive part of total elastic energy
    */
-  void computeStrainVolDev(ADReal & F_pos, ADReal & F_neg);
+  void computeStrainVolDev(Real & F_pos, Real & F_neg);
 
   /**
    * Method to split elastic energy based on stress spectral decomposition
    * @param F_pos tensile part of total elastic energy
    * @param F_neg compressive part of total elastic energy
    */
-  void computeStressSpectral(ADReal & F_pos, ADReal & F_neg);
+  void computeStressSpectral(Real & F_pos, Real & F_neg);
 
   // New method for decomposition
 
   /**
-   * Method to split elastic energy based on Drucker Prager model
+   * Method to split elastic energy based on stress dev
    * @param F_pos tensile part of total elastic energy
    * @param F_neg compressive part of total elastic energy
    */
-  void computeStressDev(ADReal & F_pos, ADReal & F_neg);
+  void computeStressDev(Real & F_pos, Real & F_neg);
 
   /**
    * Method to split elastic energy based on Drucker Prager model
    * @param F_pos tensile part of total elastic energy
    * @param F_neg compressive part of total elastic energy
    */
-  void computeStressSpDP(ADReal & F_pos, ADReal & F_neg);   
-
-  /**
-   * Method to split elastic energy based on Drucker Prager model
-   * @param F_pos tensile part of total elastic energy
-   * @param F_neg compressive part of total elastic energy
-   */
-  void computeStressSpVol(ADReal & F_pos, ADReal & F_neg);  
-     
-  /**
-   * Method to split elastic energy based on Drucker Prager model
-   * @param F_pos tensile part of total elastic energy
-   * @param F_neg compressive part of total elastic energy
-   */
-  void computeStressSpVolR(ADReal & F_pos, ADReal & F_neg);  
-
+  void computeStrainDruckerPrager(Real & F_pos, Real & F_neg);  
   /// Decomposittion type
   enum class Decomposition_type
   {
@@ -82,9 +67,7 @@ protected:
     strain_vol_dev,
     stress_spectral,
     stress_dev,
-    proto1,
-    proto2,
-    proto3,
+    strain_dp,
     none
   } _decomposition_type;
 };

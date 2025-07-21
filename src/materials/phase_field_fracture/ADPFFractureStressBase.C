@@ -1,9 +1,9 @@
 //* This file is the customized AD phase field fracture model.
 
-#include "ADGeoPFFractureStressBase.h"
+#include "ADPFFractureStressBase.h"
 
 InputParameters
-ADGeoPFFractureStressBase::validParams()
+ADPFFractureStressBase::validParams()
 {
   InputParameters params = ADComputeStressBase::validParams();
   params.addRequiredCoupledVar("c", "Name of damage variable");
@@ -21,15 +21,12 @@ ADGeoPFFractureStressBase::validParams()
       "D_name", "degradation", "Name of material property for energetic degradation function.");
   params.addParam<MaterialPropertyName>(
       "I_name", "indicator", "Name of material property for damage indicator function.");
-  params.addParam<MaterialPropertyName>(
-      "F_name",
-      "local_fracture_energy",
-      "Name of material property for local fracture energy function.");
   // Add new parameters here
+  params.addParam<MaterialPropertyName>("B", "Coefficient for Drucker Prager model");
   return params;
 }
 
-ADGeoPFFractureStressBase::ADGeoPFFractureStressBase(const InputParameters & parameters)
+ADPFFractureStressBase::ADPFFractureStressBase(const InputParameters & parameters)
   : ADComputeStressBase(parameters), 
     DerivativeMaterialPropertyNameInterface(),
     _elasticity_tensor_name(_base_name + "elasticity_tensor"),
@@ -37,7 +34,7 @@ ADGeoPFFractureStressBase::ADGeoPFFractureStressBase(const InputParameters & par
     //_Jacobian_mult(declareADProperty<RankFourTensor>("degraded_stiffness_tensor")),
     //old: _c(coupledValue("c")),
     _c_name(getVar("c", 0)->name()),
-    _l(getADMaterialProperty<Real>("l")),
+    //_l(getADMaterialProperty<Real>("l")),
     _pressure(getOptionalADMaterialProperty<Real>("fracture_pressure")), // ✅Optional variable
     _use_current_hist(getParam<bool>("use_current_history_variable")),
     _use_snes_vi_solver(getParam<bool>("use_snes_vi_solver")),
@@ -65,16 +62,12 @@ ADGeoPFFractureStressBase::ADGeoPFFractureStressBase(const InputParameters & par
     _dIdc(getOptionalADMaterialProperty<Real>(derivativePropertyName(_I_name, {_c_name}))), // ✅
     _d2Id2c(getOptionalADMaterialProperty<Real>(derivativePropertyName(_I_name, {_c_name, _c_name}))), // ✅
     // Initialize new parameters here
-    //Drucker-Prager Based sigmoid approach
-    _internal_friction(getOptionalADMaterialProperty<Real>("internal_friction")),
-    _cohesion(getOptionalADMaterialProperty<Real>("cohesion")),
-    _R_res(getOptionalADMaterialProperty<Real>("R_res")),
-    _R_init(getOptionalADMaterialProperty<Real>("R_init"))
+    _B(getOptionalADMaterialProperty<Real>("B"))
 {
 }
 
 void
-ADGeoPFFractureStressBase::initQpStatefulProperties()
+ADPFFractureStressBase::initQpStatefulProperties()
 {
   _H[_qp] = 0.0;
 

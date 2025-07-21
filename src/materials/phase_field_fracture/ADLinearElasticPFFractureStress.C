@@ -1,17 +1,17 @@
 //* This file is the customized phase field fracture model.
 
-#include "ADGeoLinearElasticPFFractureStress.h"
+#include "ADLinearElasticPFFractureStress.h"
 #include "MathUtils.h"
 
-registerMooseObject("SolidMechanicsApp", ADGeoLinearElasticPFFractureStress);
+registerMooseObject("SolidMechanicsApp", ADLinearElasticPFFractureStress);
 
 InputParameters
-ADGeoLinearElasticPFFractureStress::validParams()
+ADLinearElasticPFFractureStress::validParams()
 {
-  InputParameters params = ADGeoPFFractureStressBase::validParams();
+  InputParameters params = ADPFFractureStressBase::validParams();
   params.addClassDescription("Computes the stress and free energy derivatives for the phase field "
                              "fracture model, with small strain");
-  MooseEnum Decomposition("strain_spectral strain_vol_dev stress_spectral stress_dev proto1 proto2 proto3 none", "none");
+  MooseEnum Decomposition("strain_spectral strain_vol_dev stress_spectral stress_dev rce strain_dp none", "none");
   params.addParam<MooseEnum>("decomposition_type",
                              Decomposition,
                              "Decomposition approaches. Choices are: " +
@@ -19,19 +19,20 @@ ADGeoLinearElasticPFFractureStress::validParams()
   return params;
 }
 
-ADGeoLinearElasticPFFractureStress::ADGeoLinearElasticPFFractureStress(
+ADLinearElasticPFFractureStress::ADLinearElasticPFFractureStress(
     const InputParameters & parameters)
-  : ADGeoPFFractureStressBase(parameters),
+  : ADPFFractureStressBase(parameters),
     GuaranteeConsumer(this),
     _decomposition_type(getParam<MooseEnum>("decomposition_type").getEnum<Decomposition_type>())
 {
 }
 
 void
-ADGeoLinearElasticPFFractureStress::initialSetup()
+ADLinearElasticPFFractureStress::initialSetup()
 {
-  if ((_decomposition_type == Decomposition_type::strain_vol_dev ||
-       _decomposition_type == Decomposition_type::strain_spectral) &&
+  if ((_decomposition_type == Decomposition_type::strain_vol_dev  ||
+       _decomposition_type == Decomposition_type::strain_spectral ||
+       _decomposition_type == Decomposition_type::strain_dp) &&
       !hasGuaranteedMaterialProperty(_elasticity_tensor_name, Guarantee::ISOTROPIC))
     mooseError("Decomposition approach of strain_vol_dev and strain_spectral can only be used with "
                "isotropic elasticity tensor materials, use stress_spectral of stress_dev for anistropic "
@@ -40,7 +41,7 @@ ADGeoLinearElasticPFFractureStress::initialSetup()
 
 
 void
-ADGeoLinearElasticPFFractureStress::computeStrainSpectral(ADReal & F_pos, ADReal & F_neg)
+ADLinearElasticPFFractureStress::computeStrainSpectral(ADReal & F_pos, ADReal & F_neg)
 {
   // Isotropic elasticity is assumed and should be enforced
   const ADReal lambda = _elasticity_tensor[_qp](0, 0, 1, 1);
@@ -117,7 +118,7 @@ ADGeoLinearElasticPFFractureStress::computeStrainSpectral(ADReal & F_pos, ADReal
 }
 
 void
-ADGeoLinearElasticPFFractureStress::computeStressSpectral(ADReal & F_pos, ADReal & F_neg)
+ADLinearElasticPFFractureStress::computeStressSpectral(ADReal & F_pos, ADReal & F_neg)
 {
   // Compute Uncracked stress
   ADRankTwoTensor stress = _elasticity_tensor[_qp] * _mechanical_strain[_qp];
@@ -161,7 +162,7 @@ ADGeoLinearElasticPFFractureStress::computeStressSpectral(ADReal & F_pos, ADReal
 }
 
 void
-ADGeoLinearElasticPFFractureStress::computeStrainVolDev(ADReal & F_pos, ADReal & F_neg)
+ADLinearElasticPFFractureStress::computeStrainVolDev(ADReal & F_pos, ADReal & F_neg)
 {
   // Isotropic elasticity is assumed and should be enforced
   const ADReal lambda = _elasticity_tensor[_qp](0, 0, 1, 1);
@@ -213,7 +214,7 @@ ADGeoLinearElasticPFFractureStress::computeStrainVolDev(ADReal & F_pos, ADReal &
 
 
 void
-ADGeoLinearElasticPFFractureStress::computeStressDev(ADReal & F_pos, ADReal & F_neg)
+ADLinearElasticPFFractureStress::computeStressDev(ADReal & F_pos, ADReal & F_neg)
 {
   //const ADReal lambda = _elasticity_tensor[_qp](0, 0, 1, 1);
   //const ADReal mu = _elasticity_tensor[_qp](0, 1, 0, 1);
@@ -263,167 +264,181 @@ ADGeoLinearElasticPFFractureStress::computeStressDev(ADReal & F_pos, ADReal & F_
   //_Jacobian_mult[_qp] = _D[_qp] * Jacobian_pos + Jacobian_neg;
 }
 
-
 void
-ADGeoLinearElasticPFFractureStress::computeStressSpDP(ADReal & F_pos, ADReal & F_neg)
-{ mooseInfo("Now using prototype 1: Drucker-Prager factorial decomposition ");
+ADLinearElasticPFFractureStress::computeStressRCE(ADReal & F_pos, ADReal & F_neg)
+{
   // Compute Uncracked stress
   ADRankTwoTensor stress = _elasticity_tensor[_qp] * _mechanical_strain[_qp];
 
   ADRankTwoTensor I2(ADRankTwoTensor::initIdentity);
 
   // Create the positive and negative projection tensors
-  ADRankFourTensor I4sym(ADRankFourTensor::initIdentitySymmetricFour);
+  //ADRankFourTensor I4sym(ADRankFourTensor::initIdentitySymmetricFour);
   std::vector<ADReal> eigval;
   ADRankTwoTensor eigvec;
-  ADRankFourTensor Ppos = stress.positiveProjectionEigenDecomposition(eigval, eigvec);
+  _mechanical_strain[_qp].symmetricEigenvaluesEigenvectors(eigval, eigvec);
 
+  //Define projections
+  std::vector<ADRankTwoTensor> projections(LIBMESH_DIM);
+  for (const auto i : make_range(Moose::dim))
+    projections[i] =0.5*
+                    (ADRankTwoTensor::outerProduct(eigvec.column(Moose::dim-1),eigvec.column(i))
+                    +ADRankTwoTensor::outerProduct(eigvec.column(i),eigvec.column(Moose::dim-1)));
+  
+  const ADReal lambda = _elasticity_tensor[_qp](0, 0, 1, 1);
+  const ADReal mu = _elasticity_tensor[_qp](0, 1, 0, 1);
+  std::vector<ADReal> Lam(LIBMESH_DIM);
+  for (const auto i : make_range(Moose::dim))
+    if (i==Moose::dim-1)
+    { 
+      ADReal L1 = lambda/(lambda+2*mu)* _mechanical_strain[_qp].trace()
+                  + 2*mu/(lambda+2*mu)* (_mechanical_strain[_qp]).doubleContraction(projections[i]);
+      Lam[i] = std::max(L1,0.0);
+      //if Lam[2]<0 
+        //Lam[2] = 0.0;  
+    }
+    else 
+    {
+      Lam[i] = 2* (_mechanical_strain[_qp]).doubleContraction(projections[i]);
+      //if Lam[2]<0 
+        //Lam[0 and 1] will account some shear resistance ;  
+    }
+
+  // compute jump strain
+  ADRankTwoTensor strain_jump;
+  for (const auto i : make_range(Moose::dim))
+    strain_jump += Lam[i]*projections[i];
+
+  ADRankTwoTensor delta_strain = _mechanical_strain[_qp] - strain_jump; 
+  
   // Project the positive and negative stresses
-  ADRankTwoTensor stress0pos = Ppos * stress;
-  ADRankTwoTensor stress0neg = stress - stress0pos;
-  //1. Initialize variables : stick on negative part!!!!
-  ADReal I1 = stress0neg.trace();
-  ADReal J2 = stress0neg.secondInvariant();
-  ADReal phi = _internal_friction[_qp] * 3.141592654 / 180.0;
-  ADReal B = -1.0 / std::sqrt(3.0) * ((std::sin(phi)) / (1.0 - std::sin(phi)));
-  ADReal A = _cohesion[_qp] / std::sqrt(3.0) * (2.0 * (std::cos(phi)) / (1.0 - std::sin(phi)));
-  ADReal criterion, factor;
-  if (J2<1e-8)
-  { //mooseInfo("J2 value at qp ", _qp, " : ", J2);
-    //mooseWarning("J2 is very small at qp ", _qp, ": ", J2);
-    criterion = 0.0;
-    factor = 0.0;
-  }
-  else 
-  { 
-    criterion = std::sqrt(J2)-A-B*I1;
-    factor = std::max(1e-8, (1 - _R_res[_qp]) / (1 + exp(-30 * (criterion - _R_init[_qp]))));
-    //mooseWarning("factor", _qp, ": ", factor);
-  }
-  //mooseInfo("factor value at qp ", _qp, " : ", factor);
-  //2. Split stress0neg
-  ADRankTwoTensor stress0neg_active, stress0neg_residual, stress0act;
-  stress0neg_active = factor * stress0neg;
-  stress0neg_residual = stress0neg - stress0neg_active;
-  stress0act = stress0pos + stress0neg_active;
+  ADRankTwoTensor stress0neg = _elasticity_tensor[_qp]*delta_strain;
+  ADRankTwoTensor stress0pos = stress-stress0neg;
+
+  ADReal F0 = stress.doubleContraction(_mechanical_strain[_qp]) / 2.0;
+  F_neg = stress0neg.doubleContraction(delta_strain) / 2.0;
+  F_pos = F0 - F_neg;  
 
   if (_I_name.empty() || !(_I) || !(_pressure))
   {
-      _stress[_qp] = stress0act * _D[_qp] + stress0neg_residual;
-      _dstress_dc[_qp] = stress0act * _dDdc[_qp];
+      _stress[_qp] = stress0pos * _D[_qp] + stress0neg;
+      _dstress_dc[_qp] = stress0pos * _dDdc[_qp];
   }
   else   
   {
-    _stress[_qp] = stress0act * _D[_qp] - _pressure[_qp] * I2 * _I[_qp] + stress0neg_residual;
+    _stress[_qp] = stress0pos * _D[_qp] - _pressure[_qp] * I2 * _I[_qp] + stress0neg;
     // Used in StressDivergencePFFracTensors off-diagonal Jacobian
-    _dstress_dc[_qp] = stress0act * _dDdc[_qp] - _pressure[_qp] * I2 * _dIdc[_qp];
+    _dstress_dc[_qp] = stress0pos * _dDdc[_qp] - _pressure[_qp] * I2 * _dIdc[_qp];
   }
 
-  // Compute the positive and negative elastic energies
-  F_pos = (stress0act).doubleContraction(_mechanical_strain[_qp]) / 2.0;
-  F_neg = (stress0neg_residual).doubleContraction(_mechanical_strain[_qp]) / 2.0;
 
 
   // 2nd derivative wrt c and strain = 0.0 if we used the previous step's history varible
   if (_use_current_hist)
-    _d2Fdcdstrain[_qp] = stress0act * _dDdc[_qp];
+    _d2Fdcdstrain[_qp] = stress0pos * _dDdc[_qp];
 
+  //_Jacobian_mult[_qp] = (I4sym - (1 - _D[_qp]) * Ppos) * _elasticity_tensor[_qp];
 }
 
 void
-ADGeoLinearElasticPFFractureStress::computeStressSpVol(ADReal & F_pos, ADReal & F_neg)
-{ mooseInfo("Now using prototype 2: mixed decomposition ");
-  // Compute Uncracked stress
-  ADRankTwoTensor stress = _elasticity_tensor[_qp] * _mechanical_strain[_qp];
+ADLinearElasticPFFractureStress::computeStrainDruckerPrager(ADReal & F_pos, ADReal & F_neg)
+{
+  // Isotropic elasticity is assumed and should be enforced
+  const ADReal lambda = _elasticity_tensor[_qp](0, 0, 1, 1);
+  const ADReal mu = _elasticity_tensor[_qp](0, 1, 0, 1);
+  const ADReal k = lambda + 2.0 * mu / LIBMESH_DIM;
 
   ADRankTwoTensor I2(ADRankTwoTensor::initIdentity);
+  ADRankFourTensor I2I2 = I2.outerProduct(I2);
+  //RankFourTensor I4sym(RankFourTensor::initIdentitySymmetricFour);
+  //RankFourTensor Jacobian_pos;
+  //RankFourTensor Jacobian_neg(RankFourTensor::initIdentitySymmetricFour);
+  ADRankTwoTensor stress0pos, stress0neg;
+  
+  ADRankTwoTensor strain0dev = _mechanical_strain[_qp].deviatoric();
+  ADReal strain0tr = _mechanical_strain[_qp].trace();
+  ADReal J2_strain  = 0.5 * strain0dev.doubleContraction(strain0dev);
+  
+  ADReal J2_sqrt = std::sqrt(std::max(J2_strain, 0.0));
+  ADReal J2_sqrt_safe = (J2_strain < 1e-14) ? 1e-7 : J2_sqrt;
+  // Stress for intact material
+  ADRankTwoTensor stress0 = k * strain0tr * I2 + 2 * mu * strain0dev;
+  // Strain energy density
+  ADReal F0 = 0.5 * k * strain0tr * strain0tr + mu * strain0dev.doubleContraction(strain0dev);
 
-  // Create the positive and negative projection tensors
-  ADRankFourTensor I4sym(ADRankFourTensor::initIdentitySymmetricFour);
-  std::vector<ADReal> eigval;
-  ADRankTwoTensor eigvec;
-  ADRankFourTensor Ppos = stress.positiveProjectionEigenDecomposition(eigval, eigvec);
+  // Essential terms for if-else conditions
+  //ADReal term1 = -6 * _B[_qp] * J2_sqrt;
+  //ADReal term2 = 2 * mu * J2_sqrt;
+  //ADReal term3 = 3 * _B[_qp] * k * strain0tr;
 
-  // Project the positive and negative stresses
-  ADRankTwoTensor stress0pos = Ppos * stress;
-  ADRankTwoTensor stress0neg = stress - stress0pos;
-  ADRankTwoTensor stress0neg_dev= stress0neg.deviatoric();
-  ADRankTwoTensor stress0neg_active, stress0neg_residual, stress0act;
-  stress0neg_active = stress0neg_dev;
-  stress0neg_residual = stress0neg - stress0neg_active;
-  stress0act = stress0pos + stress0neg_active;
+  if (-6 * _B[_qp] * J2_sqrt < strain0tr) 
+  {
+      // Case 1: Strain is primarily volumetric
+      F_neg = 0.0;
+      stress0neg = 1e-10 * I2;  // Negligible stress in this case
+
+      // Jacobian_neg for Case 1
+      //Jacobian_neg = 0.0*Jacobian_neg;  // Zero tensor
+  } 
+  else if (2 * mu * J2_sqrt < 3 * _B[_qp] * k * strain0tr)
+  {
+      // Case 3: Strain is primarily deviatoric
+      F_neg = 0.5 * k * strain0tr * strain0tr + mu * strain0dev.doubleContraction(strain0dev);
+
+      stress0neg = k * strain0tr * I2 + 2 * mu * strain0dev;
+
+      // Jacobian_neg for Case 3
+      //Jacobian_neg = k * I2I2 + 2 * mu * I4sym;
+  }
+  else
+  {
+      // Case 2: Combined volumetric and deviatoric strain
+      F_neg = (k * mu) / (18 * _B[_qp] * _B[_qp] * k + 2 * mu) *
+              (strain0tr + 6 * _B[_qp] * J2_sqrt_safe) *
+              (strain0tr + 6 * _B[_qp] * J2_sqrt_safe);
+
+      stress0neg = (k * mu) / (18 * _B[_qp] * _B[_qp] * k + 2 * mu) *
+                  (2 * (strain0tr + 6 * _B[_qp] * J2_sqrt_safe) * I2 +
+                    6 * _B[_qp] / J2_sqrt_safe *
+                    (strain0tr + 6 * _B[_qp] * J2_sqrt_safe) * strain0dev);
+
+      // Jacobian_neg for Case 2
+      //Real c1 = (-18 * k * k * _B[_qp] * _B[_qp]) / (18 * _B[_qp] * _B[_qp] * k + 2 * mu);
+      //Real c2 = (2 * k * mu * _B[_qp]) / (18 * _B[_qp] * _B[_qp] * k + 2 * mu);
+      //Real c3 = (4 * mu * mu) / (18 * _B[_qp] * _B[_qp] * k + 2 * mu);
+      //Real c4 = (2 * mu) / (18 * _B[_qp] * _B[_qp] * k + 2 * mu);
+
+      //Jacobian_neg = c1 * I2.outerProduct(I2) +
+      //              c2 * I2.outerProduct(strain0dev) +
+      //              c3 * strain0dev.outerProduct(strain0dev) +
+      //              c4 * I4sym;
+  } 
+
+  stress0pos = stress0 - stress0neg;
+  F_pos=F0-F_neg;
 
   if (_I_name.empty() || !(_I) || !(_pressure))
   {
-      _stress[_qp] = stress0act * _D[_qp] + stress0neg_residual;
-      _dstress_dc[_qp] = stress0act * _dDdc[_qp];
+      _stress[_qp] = stress0pos * _D[_qp] + stress0neg;
+      _dstress_dc[_qp] = stress0pos * _dDdc[_qp];
   }
   else   
   {
-    _stress[_qp] = stress0act * _D[_qp] - _pressure[_qp] * I2 * _I[_qp] + stress0neg_residual;
+    _stress[_qp] = stress0pos * _D[_qp] - _pressure[_qp] * I2 * _I[_qp] + stress0neg;
     // Used in StressDivergencePFFracTensors off-diagonal Jacobian
-    _dstress_dc[_qp] = stress0act * _dDdc[_qp] - _pressure[_qp] * I2 * _dIdc[_qp];
+    _dstress_dc[_qp] = stress0pos * _dDdc[_qp] - _pressure[_qp] * I2 * _dIdc[_qp];
   }
-
-  // Compute the positive and negative elastic energies
-  F_pos = (stress0act).doubleContraction(_mechanical_strain[_qp]) / 2.0;
-  F_neg = (stress0neg_residual).doubleContraction(_mechanical_strain[_qp]) / 2.0;
-
-
   // 2nd derivative wrt c and strain = 0.0 if we used the previous step's history varible
   if (_use_current_hist)
-    _d2Fdcdstrain[_qp] = stress0act * _dDdc[_qp];
+    _d2Fdcdstrain[_qp] = stress0pos * _dDdc[_qp];
 
+  //Jacobian_pos = _elasticity_tensor[_qp] - Jacobian_neg;
+  //_Jacobian_mult[_qp] = _D[_qp] * Jacobian_pos + Jacobian_neg;
 }
 
-void
-ADGeoLinearElasticPFFractureStress::computeStressSpVolR(ADReal & F_pos, ADReal & F_neg)
-{ mooseInfo("Now using prototype 3: mixed decomposition with ratio");
-  // Compute Uncracked stress
-  ADRankTwoTensor stress = _elasticity_tensor[_qp] * _mechanical_strain[_qp];
-
-  ADRankTwoTensor I2(ADRankTwoTensor::initIdentity);
-
-  // Create the positive and negative projection tensors
-  ADRankFourTensor I4sym(ADRankFourTensor::initIdentitySymmetricFour);
-  std::vector<ADReal> eigval;
-  ADRankTwoTensor eigvec;
-  ADRankFourTensor Ppos = stress.positiveProjectionEigenDecomposition(eigval, eigvec);
-
-  // Project the positive and negative stresses
-  ADRankTwoTensor stress0pos = Ppos * stress;
-  ADRankTwoTensor stress0neg = stress - stress0pos;
-  ADRankTwoTensor stress0neg_dev= stress0neg.deviatoric();
-  ADRankTwoTensor stress0neg_active, stress0neg_residual, stress0act;
-  stress0neg_active = stress0neg_dev;
-  //stress0neg_residual = stress0neg - stress0neg_active;
-  stress0act = _D[_qp]*stress0pos + (1-_D[_qp])*stress0neg_active;// ✅
-  stress0neg_residual = stress - stress0act;// ✅
-  if (_I_name.empty() || !(_I) || !(_pressure))
-  {
-      _stress[_qp] = stress0act * _D[_qp] + stress0neg_residual;
-      _dstress_dc[_qp] = stress0act * _dDdc[_qp];
-  }
-  else   
-  {
-    _stress[_qp] = stress0act * _D[_qp] - _pressure[_qp] * I2 * _I[_qp] + stress0neg_residual;
-    // Used in StressDivergencePFFracTensors off-diagonal Jacobian
-    _dstress_dc[_qp] = stress0act * _dDdc[_qp] - _pressure[_qp] * I2 * _dIdc[_qp];
-  }
-
-  // Compute the positive and negative elastic energies
-  F_pos = (stress0act).doubleContraction(_mechanical_strain[_qp]) / 2.0;
-  F_neg = (stress0neg_residual).doubleContraction(_mechanical_strain[_qp]) / 2.0;
-
-
-  // 2nd derivative wrt c and strain = 0.0 if we used the previous step's history varible
-  if (_use_current_hist)
-    _d2Fdcdstrain[_qp] = stress0act * _dDdc[_qp];
-
-}
 
 void
-ADGeoLinearElasticPFFractureStress::computeQpStress()
+ADLinearElasticPFFractureStress::computeQpStress()
 {
   ADReal F_pos, F_neg;
   ADRankTwoTensor I2(ADRankTwoTensor::initIdentity);
@@ -444,14 +459,13 @@ ADGeoLinearElasticPFFractureStress::computeQpStress()
     case Decomposition_type::stress_dev:
       computeStressDev(F_pos, F_neg);
       break;
-    case Decomposition_type::proto1:
-      computeStressSpDP(F_pos, F_neg);
+    case Decomposition_type::rce:
+      computeStressRCE(F_pos, F_neg);
       break;
-    case Decomposition_type::proto2:
-      computeStressSpVol(F_pos, F_neg);
-      break;
-    case Decomposition_type::proto3:
-      computeStressSpVolR(F_pos, F_neg);
+    case Decomposition_type::strain_dp:
+      computeStrainDruckerPrager(F_pos, F_neg);
+      if (!(_B))
+        mooseError("Drucker-Prager material parameter 'B' is missing! You must set 'B' in the input file.");
       break;
     default:
     {

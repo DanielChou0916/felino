@@ -5,15 +5,15 @@
 #include "ADComputeStressBase.h"
 #include "DerivativeMaterialPropertyNameInterface.h"
 /**
-  ADGeoPFFractureStressBase is the base class for stress in phase field fracture model
+  ADPFFractureStressBase is the base class for stress in phase field fracture model
  */
-class ADGeoPFFractureStressBase : public ADComputeStressBase,
+class ADPFFractureStressBase : public ADComputeStressBase,
                                   public DerivativeMaterialPropertyNameInterface
 {
 public:
   static InputParameters validParams();
 
-  ADGeoPFFractureStressBase(const InputParameters & parameters);
+  ADPFFractureStressBase(const InputParameters & parameters);
 
 protected:
   virtual void initQpStatefulProperties() override;
@@ -28,7 +28,7 @@ protected:
   //old: const VariableValue & _c;
   const VariableName _c_name;// ✅
   /// Material property defining crack width, declared elsewhere
-  const ADMaterialProperty<Real> & _l;
+  //const ADMaterialProperty<Real> & _l;
 
   /// Material property defining pressure, declared elsewhere
   const OptionalADMaterialProperty<Real> & _pressure;// ✅
@@ -84,10 +84,6 @@ protected:
   /// Second-order derivative of damage indicator function w.r.t damage variable
   const OptionalADMaterialProperty<Real> & _d2Id2c;
   // Member variables for the new parameters
-  // Drucker-Prager Based model
-  const OptionalADMaterialProperty<Real> & _internal_friction;
-  const OptionalADMaterialProperty<Real> & _cohesion;
-  const OptionalADMaterialProperty<Real> & _R_res;
-  const OptionalADMaterialProperty<Real> & _R_init;
+  const OptionalADMaterialProperty<Real> & _B;
 //
 };
