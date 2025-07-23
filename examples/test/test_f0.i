@@ -114,7 +114,6 @@ n=0.5
     type = AnisotropicDirector
     normal = "0 1 0"#"-0.70710678 0.70710678 0"
     coef = 30
-    normalize_director = true
     output_name = A_matrix
   []
   [./uncracked_strain]
