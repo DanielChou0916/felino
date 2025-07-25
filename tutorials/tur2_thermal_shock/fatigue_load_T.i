@@ -1,9 +1,10 @@
-# Heat conduction
-rho = 2650    # Density kg/m^3
-c = 1.899e-6 #J/mm^3-K
-k0 = 3.0 #(J/10s)/mmK=0.3 #(J/s)/mmK
-T_ref = 300 #K
+########Temp System parameters############
+rho = 7.85e-6 kg/mm^3 #7850 kg/m^3
+c = 460 #J/(kg·K)
+k0 = 0.5 #(J/10s)/mmK=50 (J/s)/mK
 dT_bc = 700
+########Temp System parameters############
+
 [Mesh]
   [gen]
     type = FileMeshGenerator

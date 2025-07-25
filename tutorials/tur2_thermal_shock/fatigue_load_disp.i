@@ -3,10 +3,10 @@
 # See BCs block in fatigue_load_T.i
 # (t - 3): Start to heating up the top when t=3, about 15 cycles
 ########Start: Equilibrium/Temp System parameters############
-E = 34.0e4 #MPa
-nu = 0.22
+E = 21.0e4 #MPa
+nu = 0.3
 
-alpha_bulk = 8e-6 # Expansion m/m-K
+alpha_bulk = 8e-6 # Expansion mm/mm-K
 T_ref = 300 #K
 bc_stress = 150
 ##########End: Equilibrium/Temp System parameters#############
@@ -19,7 +19,7 @@ end_time = ${fparse period * num_cycle}
 
 ########Start: Visualization Coupling relationship#############
 T_max = 1000 #K
-k0 = 3.0 #(J/10s)/mmK=0.3 #(J/s)/mmK
+k0 = 0.5 #(J/10s)/mmK=50 (J/s)/mK
 gc0 = 2.7 # MPa-mm
 alpha_critical0 = 45 #MPa
 ########End: Visualization Coupling relationship#############

@@ -1,24 +1,26 @@
-# Equilibrium System parameters
-E = 34.0e4 #MPa
-nu = 0.22
+########Equilibrium/Temp System parameters############
+E = 21.0e4 #MPa
+nu = 0.3
 
-alpha_thermal = 8e-6 # Expansion m/m-C
+alpha_thermal = 8e-6 # Expansion mm/mm-k
 
 T_ref = 300 #K
 T_max = 1000 #K
-## PFF system ##
+########Equilibrium/Temp System parameters############
+
+########PFF system############
 gc0 = 2.7 # MPa-mm
 l = 0.01
-#'0 2'#for AT2 # Or use '1 2.6666667' for AT1
 xi = 0
 C0 = 2
 L = 1e4
+########PFF system############
 
-#fatigue
+########Fatigue############
 alpha_critical0 = 45 #MPa
 R=0.5
 n=0.5
-
+########Fatigue############
 [Mesh]
   [gen]
     type = FileMeshGenerator
