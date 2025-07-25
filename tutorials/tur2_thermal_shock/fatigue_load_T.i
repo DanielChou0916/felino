@@ -1,8 +1,9 @@
 ########Temp System parameters############
-rho = 7.85e-6 kg/mm^3 #7850 kg/m^3
+rho = 7.85e-6 #kg/mm^3 #7850 kg/m^3
 c = 460 #J/(kg·K)
 k0 = 0.5 #(J/10s)/mmK=50 (J/s)/mK
 dT_bc = 700
+T_ref = 300
 ########Temp System parameters############
 
 [Mesh]
