@@ -37,7 +37,31 @@ n=0.5
     type = SideSetsFromNodeSetsGenerator
     input = upper_left
   []
-  uniform_refine = 1
+  #uniform_refine = 1
+[]
+
+[Adaptivity]
+  marker = marker
+  initial_marker = marker
+  initial_steps = 1
+  stop_time = 0
+  max_h_level = 1
+  [Markers]
+    [marker]
+      type = RotatedBoxMarker
+      cx = 0.25
+      cy = 0.25
+      cz = 0
+      lx = 0.51
+      ly = 0.51
+      lz = 0
+      angle_z = 0
+      angle_y = 0
+      angle_x = 0
+      inside = REFINE
+      outside = DO_NOTHING
+    []
+  []
 []
 
 [GlobalParams]
