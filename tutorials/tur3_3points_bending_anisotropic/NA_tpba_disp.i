@@ -356,7 +356,7 @@ end_time = ${fparse period * num_cycle}
   [../]
   #dt = ${deltat}
   end_time = ${end_time}
-  num_steps=2
+  #num_steps=2
   fixed_point_max_its = 16
   nl_max_its = 30
   l_max_its = 25
