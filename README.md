@@ -8,8 +8,8 @@ This repository provides an extension for geomaterial fracture modeling, support
 ## 🚀 Installation Guide
 
 The following instructions assume you are using **Ubuntu (or WSL with Ubuntu)**.  
-Felino is built on top of the MOOSE framework. Please install MOOSE first.
-
+Felino is built on top of the MOOSE framework. The instruction in this page includes installation of MOOSE and Felino.
+And it is presented with the Assumption that the number of cpu on user's device is 4.
 ### 1️⃣ Install Miniforge (Lightweight Conda)
 
 ```bash
@@ -63,8 +63,8 @@ git checkout master
 
 ```bash
 cd ~/projects/moose/test
-make -j$(nproc)
-./run_tests -j$(nproc)
+make -j 4
+./run_tests -j 4
 ```
 
 ✅ If you see `All tests passed`, MOOSE installation is successful.
@@ -79,7 +79,7 @@ After MOOSE is installed, build Felino:
 cd ~/projects
 git clone https://github.com/DanielChou0916/felino.git
 cd felino
-make -j$(nproc)
+make -j 4
 ```
 
 ---
@@ -97,7 +97,6 @@ When you see `Finished Executing`, the test has run successfully.
 ---
 ## ▶️ Running a Tutorial for v1.0.2 Geomaterial Analysis
 📌 This example demonstrates the new geomaterial fracture models added in v1.0.2.
-Assume the number of cpu on device is 4.
 ```bash
 cd ~/projects/felino
 mpiexec -n 4 ./felino-opt -i tutorials/tur4_uniaxial_compression/Ce/Ce_disp.i
@@ -111,7 +110,7 @@ mpiexec -n 4 ./felino-opt -i tutorials/tur4_uniaxial_compression/Ce/Ce_disp.i
 cd ~/projects/felino
 git pull
 make clean
-make -j$(nproc)
+make -j 4
 ```
 
 ---
