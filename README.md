@@ -89,8 +89,6 @@ make -j$(nproc)
 ```bash
 cd ~/projects/felino
 ./felino-opt -i examples/test/test_disp0.i
-cd tutorials/tur4_uniaxial_compression/Ce
-../../felino-opt -i Ce_disp.i
 ```
 
 When you see `Finished Executing`, the test has run successfully.
