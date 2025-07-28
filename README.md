@@ -84,14 +84,26 @@ make -j$(nproc)
 
 ---
 
-## ▶️ Running an Example
+## ▶️ Running a Test
 
 ```bash
+cd ~/projects/felino
+./felino-opt -i examples/test/test_disp0.i
 cd tutorials/tur4_uniaxial_compression/Ce
 ../../felino-opt -i Ce_disp.i
 ```
 
-When you see `Finished Executing`, the simulation has run successfully.
+When you see `Finished Executing`, the test has run successfully.
+
+
+---
+## ▶️ Running a Tutorial for v1.0.2 Geomaterial Analysis
+📌 This example demonstrates the new geomaterial fracture models added in v1.0.2.
+Assume the number of cpu on device is 4.
+```bash
+cd ~/projects/felino
+mpiexec -n 4 ./felino-opt -i tutorials/tur4_uniaxial_compression/Ce/Ce_disp.i
+```
 
 ---
 
