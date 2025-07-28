@@ -274,7 +274,7 @@ l   = 0.2
   #  cutback_factor = 0.3 
   #  growth_factor = 1.3
   #[../]
-  dt = 1e-2
+  dt = 4e-2
   dtmin=1e-10
   end_time = 0.5
   #num_steps = 4
@@ -291,5 +291,5 @@ l   = 0.2
   exodus = true
   #perf_graph = true
   csv = true
-  time_step_interval =2
+  time_step_interval =1
 []

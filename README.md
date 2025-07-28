@@ -87,8 +87,8 @@ make -j$(nproc)
 ## ▶️ Running an Example
 
 ```bash
-cd tutorials/tur4_uniaxial_compression/rce
-../../felino-opt -i input.i
+cd tutorials/tur4_uniaxial_compression/Ce
+../../felino-opt -i Ce_disp.i
 ```
 
 When you see `Finished Executing`, the simulation has run successfully.
