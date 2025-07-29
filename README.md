@@ -88,10 +88,11 @@ make -j 4
 
 ```bash
 cd ~/projects/felino
-./felino-opt -i examples/test/test_disp0.i
+chmod +x felino_test.sh
+./felino_test.sh
 ```
 
-When you see `Finished Executing`, the test has run successfully.
+When you see `[Felino] (='V'=) Installation test PASSED.`, the test has run successfully.
 
 
 ---
