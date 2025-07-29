@@ -4,7 +4,7 @@ nu_agg       = 0.20         # Poisson's ratio
 #gc_agg       = 3e-2       # N/mm, fracture energy (typical 0.01–0.03 N/mm)
 #sigma_cs_agg = 80           # MPa, compressive strength
 #sigma_ts_agg = 7            # MPa, tensile strength (~0.08–0.1 fc)
-B_agg = -0.484
+B_agg = -0.32
 
 # Cement paste (ordinary paste for normal-strength concrete)
 E_ce         = 2.5e4        # MPa, Young's modulus
@@ -12,7 +12,7 @@ nu_ce        = 0.20         # Poisson's ratio
 #gc_ce        = 1.25e-2         # N/mm, fracture energy
 #sigma_cs_ce  = 30           # MPa, compressive strength
 #sigma_ts_ce  = 2.5          # MPa, tensile strength (~0.08–0.1 fc)
-B_ce = -0.2
+B_ce = -0.26
 
 # Other PFF parameters
 #xi  = 1

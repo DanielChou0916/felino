@@ -12,7 +12,7 @@ nu_ce        = 0.20         # Poisson's ratio
 gc_ce        = 1.25e-2         # N/mm, fracture energy
 sigma_cs_ce  = 30           # MPa, compressive strength
 sigma_ts_ce  = 2.5          # MPa, tensile strength (~0.08–0.1 fc)
-delta_elp_ce = 1.0      # 
+delta_elp_ce = 0.64     # 
 
 # Other PFF parameters
 #xi  = 1
