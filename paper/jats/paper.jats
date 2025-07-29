@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">0</article-id>
+<article-id pub-id-type="doi">N/A</article-id>
+<title-group>
+<article-title>Felino: Extension of an open-source phase-field framework
+to geomaterial fracture</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">https://orcid.org/0000-0001-7358-8819</contrib-id>
+<name>
+<surname>Chou</surname>
+<given-names>Daniel T.</given-names>
+</name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>Georgia Institute of Technology, United
+States</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2025-07-28">
+<day>28</day>
+<month>7</month>
+<year>2025</year>
+</pub-date>
+<volume>¿VOL?</volume>
+<issue>¿ISSUE?</issue>
+<fpage>¿PAGE?</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>1970</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>C++</kwd>
+<kwd>Finite Element Analysis</kwd>
+<kwd>Phase Field Fracture Mechanics</kwd>
+<kwd>Geomaterials</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>This work presents an extended version of Felino
+  (<xref alt="Chou &amp; Darabi, 2025" rid="ref-chou2025felino" ref-type="bibr">Chou
+  &amp; Darabi, 2025</xref>), an open-source phase-field fracture
+  framework. Felino is implemented as an application built on top of the
+  MOOSE finite-element framework
+  (<xref alt="Permann et al., 2020" rid="ref-permann2020moose" ref-type="bibr">Permann
+  et al., 2020</xref>), which uses libMesh as its underlying numerical
+  library
+  (<xref alt="Kirk et al., 2006" rid="ref-kirk2006libmesh" ref-type="bibr">Kirk
+  et al., 2006</xref>). The extension introduces constitutive models for
+  geomaterials, enabling simulations where tensile and compressive
+  strengths differ.</p>
+  <list list-type="bullet">
+    <list-item>
+      <p>Installation instruction:
+      <ext-link ext-link-type="uri" xlink:href="https://github.com/DanielChou0916/felino/blob/main/README.md">README</ext-link>
+      or
+      <ext-link ext-link-type="uri" xlink:href="https://danielchou0916.github.io/felino.github.io/installation/">Felino
+      official website</ext-link></p>
+    </list-item>
+    <list-item>
+      <p>Official website of Felino:
+      <ext-link ext-link-type="uri" xlink:href="https://danielchou0916.github.io/felino.github.io/#">Felino
+      official website</ext-link></p>
+    </list-item>
+    <list-item>
+      <p>Benchmark example (this extension):
+      <ext-link ext-link-type="uri" xlink:href="https://danielchou0916.github.io/felino.github.io/tutorials/4_composite_uc2D/">Uniaxial
+      Compression on Composite Material</ext-link></p>
+    </list-item>
+  </list>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of need</title>
+  <p>Phase-field fracture models have been widely used in metallic
+  fatigue simulations. However, geomaterials exhibit asymmetric
+  mechanical behavior, especially under compressive-shear loading, which
+  requires more advanced energy-splitting formulations. This updated
+  version implements three constitutive models that capture this
+  asymmetry:</p>
+  <list list-type="order">
+    <list-item>
+      <p><bold>Representative Crack Element (RCE)</bold> – interpolates
+      between intact and cracked states using strain jump
+      projections(<xref alt="Storm et al., 2020" rid="ref-storm2020concept" ref-type="bibr">Storm
+      et al., 2020</xref>).</p>
+    </list-item>
+    <list-item>
+      <p><bold>Drucker–Prager Decomposition</bold> – derives activated
+      and inactivated energy parts from a pressure-dependent failure
+      criterion(<xref alt="Navidtehrani et al., 2022" rid="ref-navidtehrani2022general" ref-type="bibr">Navidtehrani
+      et al., 2022</xref>).</p>
+    </list-item>
+    <list-item>
+      <p><bold>Extra Driving Force Formulation</bold> – introduces an
+      additional compressive-shear resistance term to the phase-field
+      equation(<xref alt="Liu &amp; Kumar, 2025" rid="ref-liu2025emergence" ref-type="bibr">Liu
+      &amp; Kumar, 2025</xref>).</p>
+    </list-item>
+  </list>
+  <p>Details of each model:
+  <ext-link ext-link-type="uri" xlink:href="https://danielchou0916.github.io/felino.github.io/technical_contents/decomposition/">Tension-Compression
+  Asymmetry</ext-link> Details of programming objects:
+  <ext-link ext-link-type="uri" xlink:href="https://danielchou0916.github.io/felino.github.io/feature_objects/crack_stress/">(AD)LinearElasticPFFractureStress
+  and (AD)ComputePFFStress</ext-link></p>
+</sec>
+<sec id="key-features">
+  <title>Key features</title>
+  <list list-type="bullet">
+    <list-item>
+      <p>Extended constitutive models for geomaterials.</p>
+    </list-item>
+    <list-item>
+      <p>Support for asymmetric tensile/compressive fracture
+      behavior.</p>
+    </list-item>
+    <list-item>
+      <p>Benchmark examples for uniaxial compression tests.</p>
+    </list-item>
+    <list-item>
+      <p>Fully integrated with MOOSE automatic differentiation.</p>
+    </list-item>
+  </list>
+</sec>
+</body>
+<back>
+<ref-list>
+  <title></title>
+  <ref id="ref-permann2020moose">
+    <element-citation publication-type="article-journal">
+      <person-group person-group-type="author">
+        <name><surname>Permann</surname><given-names>Cody J</given-names></name>
+        <name><surname>Gaston</surname><given-names>Derek R</given-names></name>
+        <name><surname>Andrs</surname><given-names>David</given-names></name>
+        <name><surname>Carlsen</surname><given-names>Robert W</given-names></name>
+        <name><surname>Miller</surname><given-names>Jason M</given-names></name>
+        <name><surname>etc.</surname></name>
+      </person-group>
+      <article-title>MOOSE: Enabling massively parallel multiphysics simulation</article-title>
+      <source>SoftwareX</source>
+      <publisher-name>Elsevier</publisher-name>
+      <year iso-8601-date="2020">2020</year>
+      <volume>11</volume>
+      <fpage>100430</fpage>
+      <lpage></lpage>
+    </element-citation>
+  </ref>
+  <ref id="ref-kirk2006libmesh">
+    <element-citation publication-type="article-journal">
+      <person-group person-group-type="author">
+        <name><surname>Kirk</surname><given-names>Benjamin S</given-names></name>
+        <name><surname>Peterson</surname><given-names>John W</given-names></name>
+        <name><surname>Stogner</surname><given-names>Roy H</given-names></name>
+        <name><surname>Carey</surname><given-names>Graham F</given-names></name>
+      </person-group>
+      <article-title>libMesh: A c++ library for parallel adaptive mesh refinement/coarsening simulations</article-title>
+      <source>Engineering with Computers</source>
+      <publisher-name>Springer</publisher-name>
+      <year iso-8601-date="2006">2006</year>
+      <volume>22</volume>
+      <fpage>237</fpage>
+      <lpage>254</lpage>
+    </element-citation>
+  </ref>
+  <ref id="ref-chou2025felino">
+    <element-citation publication-type="article-journal">
+      <person-group person-group-type="author">
+        <name><surname>Chou</surname><given-names>Daniel t</given-names></name>
+        <name><surname>Darabi</surname><given-names>Roya</given-names></name>
+      </person-group>
+      <article-title>Felino: A modular open-access software for high-cycle fatigue simulation via phase-field methods</article-title>
+      <source>Available at SSRN 5291375</source>
+      <year iso-8601-date="2025">2025</year>
+    </element-citation>
+  </ref>
+  <ref id="ref-liu2025emergence">
+    <element-citation publication-type="article-journal">
+      <person-group person-group-type="author">
+        <name><surname>Liu</surname><given-names>Chang</given-names></name>
+        <name><surname>Kumar</surname><given-names>Aditya</given-names></name>
+      </person-group>
+      <article-title>Emergence of tension–compression asymmetry from a complete phase-field approach to brittle fracture</article-title>
+      <source>International Journal of Solids and Structures</source>
+      <publisher-name>Elsevier</publisher-name>
+      <year iso-8601-date="2025">2025</year>
+      <volume>309</volume>
+      <fpage>113170</fpage>
+      <lpage></lpage>
+    </element-citation>
+  </ref>
+  <ref id="ref-navidtehrani2022general">
+    <element-citation publication-type="article-journal">
+      <person-group person-group-type="author">
+        <name><surname>Navidtehrani</surname><given-names>Yousef</given-names></name>
+        <name><surname>Betegon</surname><given-names>Covadonga</given-names></name>
+        <name><surname>Martinez-Paneda</surname><given-names>Emilio</given-names></name>
+      </person-group>
+      <article-title>A general framework for decomposing the phase field fracture driving force, particularised to a drucker–prager failure surface</article-title>
+      <source>Theoretical and Applied Fracture Mechanics</source>
+      <publisher-name>Elsevier</publisher-name>
+      <year iso-8601-date="2022">2022</year>
+      <volume>121</volume>
+      <fpage>103555</fpage>
+      <lpage></lpage>
+    </element-citation>
+  </ref>
+  <ref id="ref-storm2020concept">
+    <element-citation publication-type="article-journal">
+      <person-group person-group-type="author">
+        <name><surname>Storm</surname><given-names>J</given-names></name>
+        <name><surname>Supriatna</surname><given-names>D</given-names></name>
+        <name><surname>Kaliske</surname><given-names>M</given-names></name>
+      </person-group>
+      <article-title>The concept of representative crack elements for phase-field fracture: Anisotropic elasticity and thermo-elasticity</article-title>
+      <source>International Journal for Numerical Methods in Engineering</source>
+      <publisher-name>Wiley Online Library</publisher-name>
+      <year iso-8601-date="2020">2020</year>
+      <volume>121</volume>
+      <issue>5</issue>
+      <fpage>779</fpage>
+      <lpage>805</lpage>
+    </element-citation>
+  </ref>
+</ref-list>
+</back>
+</article>

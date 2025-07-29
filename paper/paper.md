@@ -21,9 +21,13 @@ bibliography: paper.bib
 This work presents an extended version of Felino [@chou2025felino], an open-source phase-field fracture framework.
 Felino is implemented as an application built on top of the MOOSE finite-element framework [@permann2020moose], which uses libMesh as its underlying numerical library [@kirk2006libmesh].
 The extension introduces constitutive models for geomaterials, enabling simulations where tensile and compressive strengths differ.
-- Installation instruction: [README](https://github.com/DanielChou0916/felino/blob/main/README.md) or [Felino official website (this page is assuming user already installs MOOSE)](https://danielchou0916.github.io/felino.github.io/installation/).
-- The official website of felino: [Felino official website](https://danielchou0916.github.io/felino.github.io/#).
-- Benchmark example relevant to this extension :[Uniaxial Compression on Composite Material](https://danielchou0916.github.io/felino.github.io/tutorials/4_composite_uc2D/)
+
+- Installation instruction: [README](https://github.com/DanielChou0916/felino/blob/main/README.md) or [Felino official website](https://danielchou0916.github.io/felino.github.io/installation/)
+
+- Official website of Felino: [Felino official website](https://danielchou0916.github.io/felino.github.io/#)
+
+- Benchmark example (this extension): [Uniaxial Compression on Composite Material](https://danielchou0916.github.io/felino.github.io/tutorials/4_composite_uc2D/)
+
 
 # Statement of need
 Phase-field fracture models have been widely used in metallic fatigue simulations. However, geomaterials exhibit asymmetric mechanical behavior, especially under compressive-shear loading, which requires more advanced energy-splitting formulations. This updated version implements three constitutive models that capture this asymmetry:
@@ -34,11 +38,17 @@ Phase-field fracture models have been widely used in metallic fatigue simulation
 
 Details of each model: [Tension-Compression Asymmetry](https://danielchou0916.github.io/felino.github.io/technical_contents/decomposition/)
 Details of programming objects: [(AD)LinearElasticPFFractureStress and (AD)ComputePFFStress](https://danielchou0916.github.io/felino.github.io/feature_objects/crack_stress/)
+
 # Key features
+
 - Extended constitutive models for geomaterials.
+
 - Support for asymmetric tensile/compressive fracture behavior.
+
 - Benchmark examples for uniaxial compression tests.
+
 - Fully integrated with MOOSE automatic differentiation.
+
 
 
 # References
