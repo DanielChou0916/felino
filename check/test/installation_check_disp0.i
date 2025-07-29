@@ -14,7 +14,7 @@ end_time = ${fparse period * num_cycle}
 [MultiApps]
   [crack]
     type = TransientMultiApp
-    input_files = 'test_f0.i'
+    input_files = 'installation_check_f0.i'
   []
 []
 
@@ -66,18 +66,6 @@ end_time = ${fparse period * num_cycle}
     from_multi_app = 'crack'
     source_variable = 'kappa_op'
     variable = 'kappa_op'
-  []
-  [from_dkdx]
-    type = MultiAppCopyTransfer
-    from_multi_app = 'crack'
-    source_variable = 'dkappa_dx'
-    variable = 'dkappa_dx'
-  []
-  [from_dkdy]
-    type = MultiAppCopyTransfer
-    from_multi_app = 'crack'
-    source_variable = 'dkappa_dy'
-    variable = 'dkappa_dy'
   []
 []
 
@@ -308,5 +296,6 @@ end_time = ${fparse period * num_cycle}
   exodus = false
   #perf_graph = true
   csv = false
-  time_step_interval = 8
+  #console = false
+  time_step_interval = 1
 []
