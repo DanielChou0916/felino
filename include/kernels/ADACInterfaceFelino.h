@@ -10,11 +10,11 @@
  *   ∫ ( kappa * ∇d ) · ∇(L * phi) dΩ
  * + ∫ ( ∇kappa · ∇d ) * L * phi dΩ
  */
-class ADACInterfaceGradKappa : public ADKernel, public DerivativeMaterialPropertyNameInterface
+class ADACInterfaceFelino : public ADKernel, public DerivativeMaterialPropertyNameInterface
 {
 public:
   static InputParameters validParams();
-  ADACInterfaceGradKappa(const InputParameters & parameters);
+  ADACInterfaceFelino(const InputParameters & parameters);
 
 protected:
   virtual ADReal computeQpResidual() override;
@@ -25,14 +25,7 @@ protected:
 
   /// Interfacial parameter kappa
   const ADMaterialProperty<Real> & _kappa;
-
-  /// Gradient of kappa
-  const bool _use_grad_kappa;
-  const VariableValue * _grad_kappa_x;
-  const VariableValue * _grad_kappa_y;
-  const VariableValue * _grad_kappa_z;
   
-
   /// Flag to indicate if L is variable-dependent
   const bool _variable_L;
 

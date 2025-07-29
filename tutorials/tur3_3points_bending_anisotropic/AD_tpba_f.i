@@ -58,10 +58,6 @@ n=0.5
     mobility = L
     variable_mobility=false
     use_automatic_differentiation = true
-    use_grad_kappa = true
-    grad_kappa_x = dkappa_dx
-    grad_kappa_y = dkappa_dy
-    grad_kappa_z = dkappa_dz
     use_anisotropic_matrix = true
     anisotropic_matrix = A_matrix
   [../]
@@ -92,18 +88,6 @@ n=0.5
     order = FIRST
     family = MONOMIAL
   []
-  [./dkappa_dx]
-    order = CONSTANT
-    family = MONOMIAL
-  [../]
-  [./dkappa_dy]
-    order = CONSTANT
-    family = MONOMIAL
-  [../]
-  [./dkappa_dz]
-  order = CONSTANT
-  family = MONOMIAL
-  [../]
   [./n_cycle]
     order = CONSTANT
     family = MONOMIAL
@@ -132,24 +116,6 @@ n=0.5
     variable = kappa_op
     property = kappa_op
   [../]
-  [./dfatigue_dx]
-    type = VariableGradientComponent
-    variable = dkappa_dx         
-    gradient_variable = kappa_op    
-    component = 'x'
-  [../]
-  [./dfatigue_dy]
-    type = VariableGradientComponent
-    variable = dkappa_dy
-    gradient_variable = kappa_op
-    component = 'y'
-  [../]
-  [./dfatigue_dz]
-  type = VariableGradientComponent
-  variable = dkappa_dz
-  gradient_variable = kappa_op
-  component = 'z'
-[../]
 []
 
 [Materials]

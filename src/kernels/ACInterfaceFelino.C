@@ -1,9 +1,9 @@
-#include "ACInterfaceGradKappa.h"
+#include "ACInterfaceFelino.h"
 
-registerMooseObject("PhaseFieldApp", ACInterfaceGradKappa);
+registerMooseObject("PhaseFieldApp", ACInterfaceFelino);
 
 InputParameters
-ACInterfaceGradKappa::validParams()
+ACInterfaceFelino::validParams()
 {
   InputParameters params = JvarMapKernelInterface<Kernel>::validParams();
   params.addClassDescription("Gradient energy Allen-Cahn Kernel");
@@ -14,12 +14,6 @@ ACInterfaceGradKappa::validParams()
                         "The mobility is a function of any MOOSE variable (if "
                         "this is set to false L must be constant over the "
                         "entire domain!)");
-  params.addParam<bool>("use_grad_kappa",
-                        false,
-                        "Set to false if L is constant over the domain.");
-  params.addCoupledVar("grad_kappa_x", "AuxVariable for ∂κ/∂x");
-  params.addCoupledVar("grad_kappa_y", "AuxVariable for ∂κ/∂y");
-  params.addCoupledVar("grad_kappa_z", "AuxVariable for ∂κ/∂z (only in 3D)");  
   params.addParam<bool>("use_anisotropic_matrix",
                         false,
                         "Set to false for isotropic PFF");  
@@ -27,7 +21,7 @@ ACInterfaceGradKappa::validParams()
   return params;
 }
 
-ACInterfaceGradKappa::ACInterfaceGradKappa(const InputParameters & parameters)
+ACInterfaceFelino::ACInterfaceFelino(const InputParameters & parameters)
   : DerivativeMaterialInterface<JvarMapKernelInterface<Kernel>>(parameters),
     _L(getMaterialProperty<Real>("mob_name")),
     _kappa(getMaterialProperty<Real>("kappa_name")),
@@ -40,13 +34,6 @@ ACInterfaceGradKappa::ACInterfaceGradKappa(const InputParameters & parameters)
     _d2Ldarg2(_n_args),
     _dkappadarg(_n_args),
     _gradarg(_n_args),
-    _use_grad_kappa(getParam<bool>("use_grad_kappa")),
-    _grad_kappa_x((_use_grad_kappa && parameters.isParamValid("grad_kappa_x"))
-                  ? &coupledValue("grad_kappa_x"): nullptr),
-    _grad_kappa_y((_use_grad_kappa && parameters.isParamValid("grad_kappa_y"))
-                  ? &coupledValue("grad_kappa_y"): nullptr),
-    _grad_kappa_z((_use_grad_kappa && parameters.isParamValid("grad_kappa_z"))
-                  ? &coupledValue("grad_kappa_z"): nullptr),
     _use_anisotropic_matrix(getParam<bool>("use_anisotropic_matrix")),// ✅ 2025/07/06
     _A_ptr((nullptr))// ✅ 2025/07/06
 {
@@ -76,12 +63,6 @@ ACInterfaceGradKappa::ACInterfaceGradKappa(const InputParameters & parameters)
     for (unsigned int j = 0; j < _n_args; ++j)
       _d2Ldarg2[i][j] = &getMaterialPropertyDerivative<Real>("mob_name", i, j);
   }
-// constructor
-  if (_use_grad_kappa && (!parameters.isParamValid("grad_kappa_x") || !parameters.isParamValid("grad_kappa_y")))
-  {
-    if (processor_id() == 0)
-      mooseWarning("use_grad_kappa is true, but grad_kappa_x or grad_kappa_y not provided → skipped");
-  }
 //anisotropic matrix A
   if (_use_anisotropic_matrix)// ✅ 2025/07/06
   { 
@@ -99,14 +80,14 @@ ACInterfaceGradKappa::ACInterfaceGradKappa(const InputParameters & parameters)
 }
 
 void
-ACInterfaceGradKappa::initialSetup()
+ACInterfaceFelino::initialSetup()
 {
   validateCoupling<Real>("mob_name");
   validateCoupling<Real>("kappa_name");
 }
 
 RealGradient
-ACInterfaceGradKappa::gradL()
+ACInterfaceFelino::gradL()
 {
   RealGradient g = _grad_u[_qp] * _dLdop[_qp];
   for (unsigned int i = 0; i < _n_args; ++i)
@@ -115,7 +96,7 @@ ACInterfaceGradKappa::gradL()
 }
 
 RealGradient
-ACInterfaceGradKappa::nablaLPsi()
+ACInterfaceFelino::nablaLPsi()
 {
   // sum is the product rule gradient \f$ \nabla (L\psi) \f$
   RealGradient sum = _L[_qp] * _grad_test[_i][_qp];
@@ -127,45 +108,21 @@ ACInterfaceGradKappa::nablaLPsi()
 }
 
 RealGradient
-ACInterfaceGradKappa::kappaNablaLPsi()
+ACInterfaceFelino::kappaNablaLPsi()
 {
   return _kappa[_qp] * nablaLPsi();
 }
 
-RealGradient
-ACInterfaceGradKappa::gradKappa()
-{
-  RealGradient g; // default (0,0,0)
-
-  if (_use_grad_kappa)
-  {
-    mooseInfo("use_grad_kappa = true");
-    if (_grad_kappa_x && _grad_kappa_y)
-      {
-      g(0) = (*_grad_kappa_x)[_qp];
-      g(1) = (*_grad_kappa_y)[_qp];
-
-      if (LIBMESH_DIM == 3 && _grad_kappa_z)
-        g(2) = (*_grad_kappa_z)[_qp];
-      mooseInfo("grad_kappa loaded and applied in residual");
-      }
-  }
-  return g;
-}
-
 Real
-ACInterfaceGradKappa::computeQpResidual()
+ACInterfaceFelino::computeQpResidual()
 {
   RankTwoTensor A = (_use_anisotropic_matrix && _A_ptr) ? (*_A_ptr)[_qp] : RankTwoTensor::initIdentity;// ✅ 2025/07/06
   Real r = (A* _grad_u[_qp]) * kappaNablaLPsi();
-  RealGradient gk = gradKappa();
-  // -(∇κ · ∇u) * L * test
-  r -= (gk * (A* _grad_u[_qp])) * _L[_qp] * _test[_i][_qp];
   return r;
 }
 
 Real
-ACInterfaceGradKappa::computeQpJacobian()
+ACInterfaceFelino::computeQpJacobian()
 {
   // --------------------------------------------------------------------------
   // 1) Original Jacobian from the κ ∇(L ψ) · ∇ test term
@@ -212,28 +169,13 @@ ACInterfaceGradKappa::computeQpJacobian()
   // --------------------------------------------------------------------------
   RankTwoTensor A = (_use_anisotropic_matrix && _A_ptr) ? (*_A_ptr)[_qp] : RankTwoTensor::initIdentity;// ✅ 2025/07/06
   // build ∇κ vector from coupled AuxVariables
-  RealGradient gk = gradKappa();
-
-  // derivative of ∇u term: gk·∇φ_j
-  Real d_res_grad_u = gk* (A * _grad_phi[_j][_qp]) * _L[_qp];// ✅ 2025/07/06
-
-  // derivative of L term: gk·∇u  times dL/dη
-  Real d_res_L      = gk * (A * _grad_u[_qp])     * _dLdop[_qp];// ✅ 2025/07/06
-
-  // combine both and apply the test function
-  Real extra = -(d_res_grad_u + d_res_L) * _test[_i][_qp];
-
-  // --------------------------------------------------------------------------
-  // 4) assemble full Jacobian: original + new grad(κ) part
-  // --------------------------------------------------------------------------
   
   return (_grad_phi[_j][_qp]) * (A * kappaNablaLPsi())  // from original term// ✅ 2025/07/06
-       + _grad_u[_qp]       * dsum              // from original term
-       + extra;                                 // from grad(κ) term
+       + _grad_u[_qp]       * dsum;
 }
 
 Real
-ACInterfaceGradKappa::computeQpOffDiagJacobian(unsigned int jvar)
+ACInterfaceFelino::computeQpOffDiagJacobian(unsigned int jvar)
 {
   // Map the Jacobian index back to the coupled-variable index
   const unsigned int cvar = mapJvarToCvar(jvar);
@@ -270,18 +212,6 @@ ACInterfaceGradKappa::computeQpOffDiagJacobian(unsigned int jvar)
   // Original off‐diagonal block
   Real jac = _grad_u[_qp] * dsum;
 
-  // --------------------------------------------------------------------------
-  // 2) New grad(κ) term: residual had –(∇κ·∇u) * L * test
-  //    Its derivative w.r.t. a coupled var 'arg' only enters via L
-  // --------------------------------------------------------------------------
-  RealGradient gk = gradKappa();
-  RankTwoTensor A = (_use_anisotropic_matrix && _A_ptr) ? (*_A_ptr)[_qp] : RankTwoTensor::initIdentity;// ✅ 2025/07/06
-  
-  Real extra = -(
-      (gk * (A * _grad_u[_qp]))       // ∇κ·(A·∇u)
-    * (*_dLdarg[cvar])[_qp]           // ∂L/∂arg
-    * _test[_i][_qp]
-  );// ✅ 2025/07/06
 
-  return jac + extra;
+  return jac;
 }

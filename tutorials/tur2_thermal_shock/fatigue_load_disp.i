@@ -343,6 +343,7 @@ alpha_critical0 = 45 #MPa
 
   end_time = ${end_time}
   dtmin= 1e-7
+  #num_steps=1
   fixed_point_max_its = 6
   nl_max_its = 18  
   l_max_its = 24 

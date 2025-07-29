@@ -14,7 +14,7 @@ deltat = ${fparse 100 * period}
 [MultiApps]
   [crack]
     type = TransientMultiApp
-    input_files = 'no_grad_kappa_f.i'
+    input_files = 'AD_f.i'
   []
 []
 
@@ -66,18 +66,6 @@ deltat = ${fparse 100 * period}
     from_multi_app = 'crack'
     source_variable = 'kappa_op'
     variable = 'kappa_op'
-  []
-  [from_dkdx]
-    type = MultiAppCopyTransfer
-    from_multi_app = 'crack'
-    source_variable = 'dkappa_dx'
-    variable = 'dkappa_dx'
-  []
-  [from_dkdy]
-    type = MultiAppCopyTransfer
-    from_multi_app = 'crack'
-    source_variable = 'dkappa_dy'
-    variable = 'dkappa_dy'
   []
 []
 
@@ -294,7 +282,7 @@ deltat = ${fparse 100 * period}
   dt = ${deltat}
   end_time = ${end_time}
   dtmin = 1e-4
-  num_steps=1
+  #num_steps=1
   fixed_point_max_its = 30
   nl_max_its = 16  
   l_max_its = 20  
@@ -304,9 +292,9 @@ deltat = ${fparse 100 * period}
 []
 
 [Outputs]
-  file_base=no_fatigue_diffusionR05
+  file_base=mean_loadR05_ICLA
   exodus = true
   #perf_graph = true
   csv = true
-  time_step_interval = 2
+  time_step_interval = 4
 []

@@ -1,9 +1,9 @@
-#include "ADACInterfaceGradKappa.h"
+#include "ADACInterfaceFelino.h"
 
-registerMooseObject("PhaseFieldApp", ADACInterfaceGradKappa);
+registerMooseObject("PhaseFieldApp", ADACInterfaceFelino);
 
 InputParameters
-ADACInterfaceGradKappa::validParams()
+ADACInterfaceFelino::validParams()
 {
   InputParameters params = ADKernel::validParams();
   params.addClassDescription("Extended ACInterface Kernel including grad(kappa) term.");
@@ -13,12 +13,6 @@ ADACInterfaceGradKappa::validParams()
   params.addParam<bool>("variable_L",
                         true,
                         "Set to false if L is constant over the domain.");
-  params.addParam<bool>("use_grad_kappa",
-                        false,
-                        "Set to false if L is constant over the domain.");
-  params.addCoupledVar("grad_kappa_x", "Gradient of kappa in x direction");
-  params.addCoupledVar("grad_kappa_y", "Gradient of kappa in y direction");
-  params.addCoupledVar("grad_kappa_z", "Gradient of kappa in z direction (only for 3D)");  
   params.addParam<bool>("use_anisotropic_matrix",
                         false,
                         "Set to false for isotropic PFF");  
@@ -26,18 +20,11 @@ ADACInterfaceGradKappa::validParams()
   return params;
 }
 
-ADACInterfaceGradKappa::ADACInterfaceGradKappa(const InputParameters & parameters)
+ADACInterfaceFelino::ADACInterfaceFelino(const InputParameters & parameters)
   : ADKernel(parameters),
     _prop_L(getADMaterialProperty<Real>("mob_name")),
     _name_L(getParam<MaterialPropertyName>("mob_name")),
     _kappa(getADMaterialProperty<Real>(getParam<MaterialPropertyName>("kappa_name"))),
-    _use_grad_kappa(getParam<bool>("use_grad_kappa")),
-    _grad_kappa_x((_use_grad_kappa && parameters.isParamValid("grad_kappa_x"))
-                  ? &coupledValue("grad_kappa_x"): nullptr),
-    _grad_kappa_y((_use_grad_kappa && parameters.isParamValid("grad_kappa_y"))
-                  ? &coupledValue("grad_kappa_y"): nullptr),
-    _grad_kappa_z((_use_grad_kappa && parameters.isParamValid("grad_kappa_z"))
-                  ? &coupledValue("grad_kappa_z"): nullptr),
     _variable_L(getParam<bool>("variable_L")),
     _dLdop(_variable_L
                ? &getADMaterialProperty<Real>(derivativePropertyNameFirst(_name_L, _var.name()))
@@ -61,11 +48,6 @@ ADACInterfaceGradKappa::ADACInterfaceGradKappa(const InputParameters & parameter
       _gradarg[i] = &(ivar->adGradSln());
     }
 // constructor
-  if (_use_grad_kappa && (!parameters.isParamValid("grad_kappa_x") || !parameters.isParamValid("grad_kappa_y")))
-  {
-    if (processor_id() == 0)
-      mooseWarning("use_grad_kappa is true, but grad_kappa_x or grad_kappa_y not provided → skipped");
-  }
   //anisotropic matrix A
   if (_use_anisotropic_matrix)// ✅ 2025/07/06
   { 
@@ -83,7 +65,7 @@ ADACInterfaceGradKappa::ADACInterfaceGradKappa(const InputParameters & parameter
 }
 
 ADReal
-ADACInterfaceGradKappa::computeQpResidual()
+ADACInterfaceFelino::computeQpResidual()
 {
   ADRankTwoTensor A = (_use_anisotropic_matrix && _A_ptr) ? (*_A_ptr)[_qp] : ADRankTwoTensor::initIdentity;
   ADRealVectorValue nabla_Lpsi = _prop_L[_qp] * _grad_test[_i][_qp];
@@ -99,28 +81,5 @@ ADACInterfaceGradKappa::computeQpResidual()
 
   ADReal residual = (A * _grad_u[_qp]) * _kappa[_qp] * nabla_Lpsi;
 
-  //ADRealVectorValue grad_kappa_vec;
-
-  if (_use_grad_kappa)
-  {
-    mooseInfo("use_grad_kappa = true");
-  
-    if (_grad_kappa_x && _grad_kappa_y)
-    {
-      ADRealVectorValue grad_kappa_vec;
-      grad_kappa_vec(0) = (*_grad_kappa_x)[_qp];
-      grad_kappa_vec(1) = (*_grad_kappa_y)[_qp];
-  
-      if (LIBMESH_DIM == 3 && _grad_kappa_z)
-        grad_kappa_vec(2) = (*_grad_kappa_z)[_qp];
-  
-      mooseInfo("grad_kappa loaded and applied in residual");
-      residual -= (grad_kappa_vec * (A * _grad_u[_qp])) * _prop_L[_qp] * _test[_i][_qp];
-    }
-    //else
-    //{
-    //  mooseWarning("use_grad_kappa is true, but grad_kappa_x or grad_kappa_y not provided → skipped");
-    //}
-  }
   return residual;
 }

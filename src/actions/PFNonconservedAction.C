@@ -47,10 +47,6 @@ PFNonconservedAction::validParams()
                         "entire domain!)");
   params.addParam<std::vector<SubdomainName>>(
       "block", {}, "Block restriction for the variables and kernels");
-  params.addParam<bool>("use_grad_kappa", false, "If true, include gradient of material parameter in residual");// ✅// ✅
-  params.addCoupledVar("grad_kappa_x", "Gradient of kappa in x direction");// ✅// ✅
-  params.addCoupledVar("grad_kappa_y", "Gradient of kappa in y direction");// ✅// ✅
-  params.addCoupledVar("grad_kappa_z", "Gradient of kappa in z direction (only for 3D)");  // ✅// ✅
   params.addParam<bool>("use_anisotropic_matrix", false, "If true, load anisotropic director in ACInterface kernel");// ✅2025/07/06
   params.addParam<MaterialPropertyName>("anisotropic_matrix", "A", "The name of anisotropic matrix");// ✅2025/07/06
   params.addParam<bool>("use_automatic_differentiation", false, "If true, select AD kernels");// ✅2025/07/06
@@ -90,7 +86,7 @@ PFNonconservedAction::act()
     bool use_ad = getParam<bool>("use_automatic_differentiation");
     const std::string td_kernel  = use_ad ? "ADTimeDerivative" : "TimeDerivative";
     const std::string ac_kernel  = use_ad ? "ADAllenCahn" : "AllenCahn";
-    const std::string intf_kernel = use_ad ? "ADACInterfaceGradKappa" : "ACInterfaceGradKappa";   
+    const std::string intf_kernel = use_ad ? "ADACInterfaceFelino" : "ACInterfaceFelino";   
     // Add time derivative kernel
     std::string kernel_name = _var_name + "_" + td_kernel;
     InputParameters params1 = _factory.getValidParams(td_kernel);
@@ -114,7 +110,6 @@ PFNonconservedAction::act()
     params3.set<MaterialPropertyName>("mob_name") = getParam<MaterialPropertyName>("mobility");
     params3.set<MaterialPropertyName>("kappa_name") = getParam<MaterialPropertyName>("kappa");
     params3.set<bool>("variable_L") = getParam<bool>("variable_mobility");
-    params3.set<bool>("use_grad_kappa") = getParam<bool>("use_grad_kappa");
     params3.set<bool>("use_anisotropic_matrix") = getParam<bool>("use_anisotropic_matrix");
     params3.set<MaterialPropertyName>("anisotropic_matrix_name") = getParam<MaterialPropertyName>("anisotropic_matrix");
     params3.applyParameters(parameters());

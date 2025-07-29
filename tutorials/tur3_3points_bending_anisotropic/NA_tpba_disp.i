@@ -79,24 +79,6 @@ end_time = ${fparse period * num_cycle}
     source_variable = 'kappa_op'
     variable = 'kappa_op'
   []
-  #[from_dkdx]
-  #  type = MultiAppCopyTransfer
-  #  from_multi_app = 'crack'
-  #  source_variable = 'dkappa_dx'
-  #  variable = 'dkappa_dx'
-  #[]
-  #[from_dkdy]
-  #  type = MultiAppCopyTransfer
-  #  from_multi_app = 'crack'
-  #  source_variable = 'dkappa_dy'
-  #  variable = 'dkappa_dy'
-  #[]
-  #[from_dkdz]
-  #type = MultiAppCopyTransfer
-  #from_multi_app = 'crack'
-  #source_variable = 'dkappa_dz'
-  #variable = 'dkappa_dz'
-  #[]
 []
 
 [Mesh]
@@ -166,18 +148,6 @@ end_time = ${fparse period * num_cycle}
     order = FIRST
     family = MONOMIAL
   []
-  #[./dkappa_dx]
-  #  order = CONSTANT
-  #  family = MONOMIAL
-  #[../]
-  #[./dkappa_dy]
-  #  order = CONSTANT
-  #  family = MONOMIAL
-  #[../]
-  #[./dkappa_dz]
-  #order = CONSTANT
-  #family = MONOMIAL
-  #[../]
   [./n_cycle]
     order = CONSTANT
     family = MONOMIAL
@@ -356,7 +326,7 @@ end_time = ${fparse period * num_cycle}
   [../]
   #dt = ${deltat}
   end_time = ${end_time}
-  #num_steps=2
+  #num_steps=1
   fixed_point_max_its = 16
   nl_max_its = 30
   l_max_its = 25

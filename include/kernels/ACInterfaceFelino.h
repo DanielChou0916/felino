@@ -8,12 +8,12 @@
  * Compute the Allen-Cahn interface term with the weak form residual
  * \f$ \left( \kappa_i \nabla\eta_i, \nabla (L_i \psi) \right) \f$
  */
-class ACInterfaceGradKappa : public DerivativeMaterialInterface<JvarMapKernelInterface<Kernel>>
+class ACInterfaceFelino : public DerivativeMaterialInterface<JvarMapKernelInterface<Kernel>>
 {
 public:
   static InputParameters validParams();
 
-  ACInterfaceGradKappa(const InputParameters & parameters);
+  ACInterfaceFelino(const InputParameters & parameters);
   virtual void initialSetup();
 
 protected:
@@ -22,7 +22,6 @@ protected:
   virtual Real computeQpOffDiagJacobian(unsigned int jvar);
 
   RealGradient gradL();
-  RealGradient gradKappa();
 
   /// the \f$ \nabla(L\psi) \f$ term
   RealGradient nablaLPsi();
@@ -57,11 +56,6 @@ protected:
 
   /// Gradients for all coupled variables
   std::vector<const VariableGradient *> _gradarg;
-  /// gradient of kappa in each direction
-  const bool _use_grad_kappa;
-  const VariableValue * _grad_kappa_x;
-  const VariableValue * _grad_kappa_y;
-  const VariableValue * _grad_kappa_z;
 
   const bool _use_anisotropic_matrix;// ✅ 2025/07/06
   const MaterialProperty<RankTwoTensor> * _A_ptr;// ✅ 2025/07/06

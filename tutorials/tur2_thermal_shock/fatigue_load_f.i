@@ -75,9 +75,6 @@ n=0.5
     mobility = L
     variable_mobility=false
     use_automatic_differentiation = true
-    use_grad_kappa = true
-    grad_kappa_x = dkappa_dx
-    grad_kappa_y = dkappa_dy
     use_anisotropic_matrix = false
   [../]
 []
@@ -108,14 +105,6 @@ n=0.5
     order = FIRST
     family = MONOMIAL
   []
-  [./dkappa_dx]
-    order = CONSTANT
-    family = MONOMIAL
-  [../]
-  [./dkappa_dy]
-    order = CONSTANT
-    family = MONOMIAL
-  [../]
   [./n_cycle]
     order = CONSTANT
     family = MONOMIAL
@@ -143,18 +132,6 @@ n=0.5
     type = ADMaterialRealAux
     variable = kappa_op
     property = kappa_op
-  [../]
-  [./dfatigue_dx]
-    type = VariableGradientComponent
-    variable = dkappa_dx         
-    gradient_variable = kappa_op    
-    component = 'x'
-  [../]
-  [./dfatigue_dy]
-    type = VariableGradientComponent
-    variable = dkappa_dy
-    gradient_variable = kappa_op
-    component = 'y'
   [../]
 []
 

@@ -14,7 +14,7 @@ deltat = ${fparse 100 * period}
 [MultiApps]
   [crack]
     type = TransientMultiApp
-    input_files = 'NA_grad_kappa_f.i'
+    input_files = 'NA_f.i'
   []
 []
 
@@ -67,18 +67,6 @@ deltat = ${fparse 100 * period}
     source_variable = 'kappa_op'
     variable = 'kappa_op'
   []
-  [from_dkdx]
-    type = MultiAppCopyTransfer
-    from_multi_app = 'crack'
-    source_variable = 'dkappa_dx'
-    variable = 'dkappa_dx'
-  []
-  [from_dkdy]
-    type = MultiAppCopyTransfer
-    from_multi_app = 'crack'
-    source_variable = 'dkappa_dy'
-    variable = 'dkappa_dy'
-  []
 []
 
 [Mesh]
@@ -122,14 +110,6 @@ deltat = ${fparse 100 * period}
     order = FIRST
     family = MONOMIAL
   []
-  [./dkappa_dx]
-    order = CONSTANT
-    family = MONOMIAL
-  [../]
-  [./dkappa_dy]
-    order = CONSTANT
-    family = MONOMIAL
-  [../]
   [./n_cycle]
     order = CONSTANT
     family = MONOMIAL
