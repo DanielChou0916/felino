@@ -92,7 +92,7 @@ chmod +x felino_test.sh
 ./felino_test.sh
 ```
 
-When you see `[Felino] (='V'=) Installation test PASSED.`, the test has run successfully.
+When you see `[Felino] (='v'=) Installation test PASSED.`, the test has run successfully.
 
 
 ---

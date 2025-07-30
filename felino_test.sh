@@ -22,13 +22,14 @@ if [ ! -f "$TEST_INPUT" ]; then
     exit 1
 fi
 
-echo "[Felino] Running installation test..."
-"$EXE" -i "$TEST_INPUT" --n-threads=1 > /dev/null 2>&1
+echo "[Felino] (='-'=) Running installation test..."
+"$EXE" -i "$TEST_INPUT" --n-threads=1 > run.log 2>&1
 
 if [ $? -eq 0 ]; then
-    echo "[Felino] (='V'=) Installation test PASSED."
+    echo "[Felino] (='v'=) Installation test PASSED."
+    rm -f run.log   # remove log file if test passed
     exit 0
 else
-    echo "[Felino] (='^'=) Installation test FAILED."
+    echo "[Felino] (='^'=) Installation test FAILED.  Check run.log for details"
     exit 1
 fi
