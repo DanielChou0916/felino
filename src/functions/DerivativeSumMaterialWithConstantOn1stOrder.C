@@ -34,6 +34,12 @@ DerivativeSumMaterialWithConstantOn1stOrderTempl<is_ad>::validParams()
                         "Check if all variables the specified materials depend on are listed in "
                         "the `coupled_variables` parameter.");
   params.addParamNamesToGroup("prefactor constant", "Advanced");
+  params.addParam<bool>(
+    "output_individual_derivatives",
+    false,
+    "Whether to output individual first derivatives for each summand material."
+  );
+
   //mooseInfo("=== DEBUG: Done adding parameters in validParams ===");
   return params;
 }
@@ -49,7 +55,8 @@ DerivativeSumMaterialWithConstantOn1stOrderTempl<is_ad>::DerivativeSumMaterialWi
     // Additional constant variable
     // ✅
     _additional_summands_materials(this->template getParam<std::vector<std::string>>("additional_sum_materials")),
-    _num_constant_materials(_additional_summands_materials.size())
+    _num_constant_materials(_additional_summands_materials.size()),
+    _output_individual_derivatives(this->template getParam<bool>("output_individual_derivatives"))
 { // we need at least one constant material in the sum
   if (_num_constant_materials == 0)// ✅
     mooseError("Please supply at least one constant material, otherwise use DerivativeSumMaterial!", name());// ✅
@@ -111,6 +118,14 @@ DerivativeSumMaterialWithConstantOn1stOrderTempl<is_ad>::DerivativeSumMaterialWi
       }
     }
   }
+  if (_output_individual_derivatives)
+  {
+    _summand_dF_out.reserve(_num_materials);
+    for (unsigned int n = 0; n < _num_materials; ++n)
+      _summand_dF_out.push_back(
+          &this->template declareGenericProperty<Real, is_ad>(
+              "first_derivative_" + _sum_materials[n]));
+  }
 }
 
 template <bool is_ad>
@@ -146,6 +161,13 @@ DerivativeSumMaterialWithConstantOn1stOrderTempl<is_ad>::computeProperties()
         (*_prop_dF[i])[_qp] = (*_summand_dF[0][i])[_qp] * _prefactor[0];
         for (unsigned int n = 1; n < _num_materials; ++n)
           (*_prop_dF[i])[_qp] += (*_summand_dF[n][i])[_qp] * _prefactor[n];
+        // ✅ `Output Derivatives` 0801
+        if (_output_individual_derivatives)
+        {
+          for (unsigned int n = 0; n < _num_materials; ++n)
+            (*_summand_dF_out[n])[_qp] = (*_summand_dF[n][0])[_qp];
+        }
+        // [0] stands for only using the first derivative
         // ✅ `_additional_constant`
         for (unsigned int n = 0; n < _num_constant_materials; ++n) // ✅ 
         {

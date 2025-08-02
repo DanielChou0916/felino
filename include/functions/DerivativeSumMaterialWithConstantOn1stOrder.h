@@ -46,6 +46,11 @@ protected:
   std::vector<std::string> _additional_summands_materials;// ✅
   unsigned int _num_constant_materials;// ✅
   std::vector<const GenericMaterialProperty<Real, is_ad> *> _add_summand_F;// ✅
+
+  /// For outputting individual summand derivatives
+  const bool _output_individual_derivatives; // ✅ 0801
+  std::vector<GenericMaterialProperty<Real, is_ad> *> _summand_dF_out;// ✅0801
+
 };
 
 typedef DerivativeSumMaterialWithConstantOn1stOrderTempl<false> DerivativeSumMaterialWithConstantOn1stOrder;
