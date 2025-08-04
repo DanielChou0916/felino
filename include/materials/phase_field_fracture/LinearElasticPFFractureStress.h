@@ -55,6 +55,13 @@ protected:
   void computeStressDev(Real & F_pos, Real & F_neg);
 
   /**
+   * Method to split elastic energy based on RCE model
+   * @param F_pos tensile part of total elastic energy
+   * @param F_neg compressive part of total elastic energy
+   */
+  void computeStressRCE(Real & F_pos, Real & F_neg);
+
+  /**
    * Method to split elastic energy based on Drucker Prager model
    * @param F_pos tensile part of total elastic energy
    * @param F_neg compressive part of total elastic energy
@@ -67,6 +74,7 @@ protected:
     strain_vol_dev,
     stress_spectral,
     stress_dev,
+    rce,
     strain_dp,
     none
   } _decomposition_type;

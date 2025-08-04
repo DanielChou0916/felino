@@ -32,6 +32,7 @@ ADLinearElasticPFFractureStress::initialSetup()
 {
   if ((_decomposition_type == Decomposition_type::strain_vol_dev  ||
        _decomposition_type == Decomposition_type::strain_spectral ||
+       _decomposition_type == Decomposition_type::rce ||
        _decomposition_type == Decomposition_type::strain_dp) &&
       !hasGuaranteedMaterialProperty(_elasticity_tensor_name, Guarantee::ISOTROPIC))
     mooseError("Decomposition approach of strain_vol_dev and strain_spectral can only be used with "

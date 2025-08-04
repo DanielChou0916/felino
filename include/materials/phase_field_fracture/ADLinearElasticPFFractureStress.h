@@ -48,14 +48,14 @@ protected:
   // New method for decomposition
 
   /**
-   * Method to split elastic energy based on Drucker Prager model
+   * Method to split elastic energy based on stress dev decomposition
    * @param F_pos tensile part of total elastic energy
    * @param F_neg compressive part of total elastic energy
    */
   void computeStressDev(ADReal & F_pos, ADReal & F_neg);
 
   /**
-   * Method to split elastic energy based on Drucker Prager model
+   * Method to split elastic energy based on RCE model
    * @param F_pos tensile part of total elastic energy
    * @param F_neg compressive part of total elastic energy
    */

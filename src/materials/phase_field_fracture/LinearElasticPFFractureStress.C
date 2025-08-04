@@ -11,7 +11,7 @@ LinearElasticPFFractureStress::validParams()
   InputParameters params = PFFractureStressBase::validParams();
   params.addClassDescription("Computes the stress and free energy derivatives for the phase field "
                              "fracture model, with small strain");
-  MooseEnum Decomposition("strain_spectral strain_vol_dev stress_spectral stress_dev strain_dp none", "none");
+  MooseEnum Decomposition("strain_spectral strain_vol_dev stress_spectral stress_dev rce strain_dp none", "none");
   params.addParam<MooseEnum>("decomposition_type",
                              Decomposition,
                              "Decomposition approaches. Choices are: " +
@@ -32,6 +32,7 @@ LinearElasticPFFractureStress::initialSetup()
 {
   if ((_decomposition_type == Decomposition_type::strain_vol_dev  ||
        _decomposition_type == Decomposition_type::strain_spectral ||
+       _decomposition_type == Decomposition_type::rce ||
        _decomposition_type == Decomposition_type::strain_dp) &&
       !hasGuaranteedMaterialProperty(_elasticity_tensor_name, Guarantee::ISOTROPIC))
     mooseError("Decomposition approach of strain_vol_dev and strain_spectral can only be used with "
@@ -262,6 +263,94 @@ LinearElasticPFFractureStress::computeStressDev(Real & F_pos, Real & F_neg)
   _Jacobian_mult[_qp] = _D[_qp] * Jacobian_pos + Jacobian_neg;
 }
 
+
+void
+LinearElasticPFFractureStress::computeStressRCE(Real & F_pos, Real & F_neg)
+{
+  // Compute Uncracked stress
+  RankTwoTensor stress = _elasticity_tensor[_qp] * _mechanical_strain[_qp];
+
+  RankTwoTensor I2(RankTwoTensor::initIdentity);
+
+  // Create the positive and negative projection tensors
+  RankFourTensor I4sym(RankFourTensor::initIdentitySymmetricFour);
+  std::vector<Real> eigval;
+  RankTwoTensor eigvec;
+  _mechanical_strain[_qp].symmetricEigenvaluesEigenvectors(eigval, eigvec);
+
+  //Define projections
+  std::vector<RankTwoTensor> projections(LIBMESH_DIM);
+  for (const auto i : make_range(Moose::dim))
+    projections[i] =0.5*
+                    (RankTwoTensor::outerProduct(eigvec.column(Moose::dim-1),eigvec.column(i))
+                    +RankTwoTensor::outerProduct(eigvec.column(i),eigvec.column(Moose::dim-1)));
+
+  const Real lambda = _elasticity_tensor[_qp](0, 0, 1, 1);
+  const Real mu = _elasticity_tensor[_qp](0, 1, 0, 1);
+  std::vector<Real> Lam(LIBMESH_DIM);
+  for (const auto i : make_range(Moose::dim))
+    if (i==Moose::dim-1)
+    { 
+      Real L1 = lambda/(lambda+2*mu)* _mechanical_strain[_qp].trace()
+                  + 2*mu/(lambda+2*mu)* (_mechanical_strain[_qp]).doubleContraction(projections[i]);
+      Lam[i] = std::max(L1,0.0);
+      //if Lam[2]<0 
+        //Lam[2] = 0.0;  
+    }
+    else 
+    {
+      Lam[i] = 2* (_mechanical_strain[_qp]).doubleContraction(projections[i]);
+      //if Lam[2]<0 
+        //Lam[0 and 1] will account some shear resistance ;  
+    }
+
+  // compute jump strain
+  RankTwoTensor strain_jump;
+  for (const auto i : make_range(Moose::dim))
+    strain_jump += Lam[i]*projections[i];
+
+  RankTwoTensor delta_strain = _mechanical_strain[_qp] - strain_jump; 
+  
+  // Project the positive and negative stresses
+  RankTwoTensor stress0neg = _elasticity_tensor[_qp]*delta_strain;
+  RankTwoTensor stress0pos = stress-stress0neg;
+
+  Real F0 = stress.doubleContraction(_mechanical_strain[_qp]) / 2.0;
+  F_neg = stress0neg.doubleContraction(delta_strain) / 2.0;
+  F_pos = F0 - F_neg;  
+
+  if (_I_name.empty() || !(_I) || !(_pressure))
+  {
+      _stress[_qp] = stress0pos * _D[_qp] + stress0neg;
+      _dstress_dc[_qp] = stress0pos * _dDdc[_qp];
+  }
+  else   
+  {
+    _stress[_qp] = stress0pos * _D[_qp] - _pressure[_qp] * I2 * _I[_qp] + stress0neg;
+    // Used in StressDivergencePFFracTensors off-diagonal Jacobian
+    _dstress_dc[_qp] = stress0pos * _dDdc[_qp] - _pressure[_qp] * I2 * _dIdc[_qp];
+  }
+
+
+
+  // 2nd derivative wrt c and strain = 0.0 if we used the previous step's history varible
+  if (_use_current_hist)
+    _d2Fdcdstrain[_qp] = stress0pos * _dDdc[_qp];
+
+
+  // Compute jacobian APPROXIMATION
+  RankFourTensor Ppos_approx;
+  for (const auto i : make_range(Moose::dim))
+  {
+    // Only account the activated parts
+    if (Lam[i] > 0.0)
+      Ppos_approx += projections[i].outerProduct(projections[i]); // (n_i ⊗ n_j) ⊗ (n_i ⊗ n_j)
+  }
+  _Jacobian_mult[_qp] = (I4sym - (1 - _D[_qp]) * Ppos_approx) * _elasticity_tensor[_qp];
+}
+
+
+
 void
 LinearElasticPFFractureStress::computeStrainDruckerPrager(Real & F_pos, Real & F_neg)
 {
@@ -375,6 +464,9 @@ LinearElasticPFFractureStress::computeQpStress()
       break;
     case Decomposition_type::stress_dev:
       computeStressDev(F_pos, F_neg);
+      break;
+    case Decomposition_type::rce:
+      computeStressRCE(F_pos, F_neg);
       break;
     case Decomposition_type::strain_dp:
       computeStrainDruckerPrager(F_pos, F_neg);
