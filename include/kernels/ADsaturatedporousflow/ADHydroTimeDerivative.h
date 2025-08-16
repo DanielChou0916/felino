@@ -13,5 +13,7 @@ public:
 
 protected:
   virtual ADReal precomputeQpResidual() override;
+
+  const ADMaterialProperty<Real> & _fluid_density;
   const ADMaterialProperty<Real> & _biot_modulus;
 };
