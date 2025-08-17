@@ -277,7 +277,8 @@ ADLinearElasticPFFractureStress::computeStressRCE(ADReal & F_pos, ADReal & F_neg
   //ADRankFourTensor I4sym(ADRankFourTensor::initIdentitySymmetricFour);
   std::vector<ADReal> eigval;
   ADRankTwoTensor eigvec;
-  _mechanical_strain[_qp].symmetricEigenvaluesEigenvectors(eigval, eigvec);
+  //_mechanical_strain[_qp].symmetricEigenvaluesEigenvectors(eigval, eigvec);
+  stress.symmetricEigenvaluesEigenvectors(eigval, eigvec);
 
   //Define projections
   std::vector<ADRankTwoTensor> projections(LIBMESH_DIM);
