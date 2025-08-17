@@ -15,5 +15,5 @@ protected:
   virtual ADReal computeQpResidual() override;
   const ADMaterialProperty<Real> & _fluid_density;
   const ADMaterialProperty<Real> & _biot_coefficient;
-  const ADMaterialProperty<Real> & _strain_rate;
+  const ADMaterialProperty<Real> &  _vol_strain_rate;
 };

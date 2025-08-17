@@ -3,17 +3,14 @@
 #pragma once
 
 #include "ADKernel.h"
+#include "RankTwoTensor.h"
 
-/**
- * This ADkernel implements the Laplacian operator:
- * $\nabla u \cdot \nabla \phi_i$
- */
-class ADHydroDiffusion : public ADKernel
+class ADHydroGravity : public ADKernel
 {
 public:
   static InputParameters validParams();
 
-  ADHydroDiffusion(const InputParameters & parameters);
+  ADHydroGravity(const InputParameters & parameters);
 
 protected:
   virtual ADReal computeQpResidual() override;
@@ -23,4 +20,6 @@ protected:
   const ADMaterialProperty<Real> & _fluid_viscosity;
 
   const ADMaterialProperty<RankTwoTensor> & _permeability_tensor;
+  
+  const RealVectorValue _gravity;
 };

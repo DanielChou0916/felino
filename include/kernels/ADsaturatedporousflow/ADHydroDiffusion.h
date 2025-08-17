@@ -3,6 +3,7 @@
 #pragma once
 
 #include "ADKernel.h"
+#include "RankTwoTensor.h"
 
 /**
  * This ADkernel implements the Laplacian operator:

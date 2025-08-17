@@ -1,44 +1,41 @@
-#pragma once
-
 #include "PorousFlowPermeabilityBase.h"
 
-/**
- * Material to compute permeability tensor as:
- *   k = k_ijk * k0
- * where k_ijk is an anisotropy tensor and k0 is a scalar variable.
- * Depending on the selected model, an additional term is added to account
- * for fracture plane permeability changes.
- */
+// TEMPLATED Material
 template <bool is_ad>
-class PorousFlowPermeabilityTensorFromVarPFFTempl : public PorousFlowPermeabilityBaseTempl<is_ad>
+class PorousFlowPermeabilityTensorFromVarPFFTempl
+  : public PorousFlowPermeabilityBaseTempl<is_ad>
 {
 public:
   static InputParameters validParams();
-
   PorousFlowPermeabilityTensorFromVarPFFTempl(const InputParameters & parameters);
 
 protected:
   void computeQpProperties() override;
 
-  /// Coupled scalar permeability
-  const VariableValue & _perm;
+  // 變數（AD/非AD 通吃）
+  const GenericVariableValue<is_ad> & _perm;
 
-  /// Tensor multiplier k_ijk
+  // 常數各向異性張量
   const RealTensorValue _k_anisotropy;
 
-  /// Parameter names
+  // 參數名稱
   const MaterialPropertyName _crack_direction_name;
   const MaterialPropertyName _coef_name;
 
-  /// Selected model ("directional" or "exponential")
+  // 模型
   std::string _model;
 
-  /// Material properties (initialized conditionally)
-  const MaterialProperty<RankTwoTensor> * _crack_direction = nullptr;
-  const MaterialProperty<Real> * _A = nullptr;
+  // 這個「係數 A」無論哪個模型都會用到 => 用「參考」
+  const GenericMaterialProperty<Real,         is_ad> & _A;
+
+  // crack 方向只在 directional 模型需要 => 用「指標」，沒用就 nullptr
+  const GenericMaterialProperty<RankTwoTensor, is_ad> * _crack_direction;
+  // 對外可讀取的同名/自訂名 property
+  GenericMaterialProperty<RankTwoTensor, is_ad> & _perm_out;
 
   usingPorousFlowPermeabilityBaseMembers;
 };
 
-typedef PorousFlowPermeabilityTensorFromVarPFFTempl<false> PorousFlowPermeabilityTensorFromVarPFF;
-//typedef PorousFlowPermeabilityTensorFromVarPFFTempl<true> ADPorousFlowPermeabilityTensorFromVarPFF;
+// 型別別名 + 註冊
+using PorousFlowPermeabilityTensorFromVarPFF  = PorousFlowPermeabilityTensorFromVarPFFTempl<false>;
+using ADPorousFlowPermeabilityTensorFromVarPFF = PorousFlowPermeabilityTensorFromVarPFFTempl<true>;
