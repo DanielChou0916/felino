@@ -22,4 +22,6 @@ protected:
   const ADMaterialProperty<RankTwoTensor> & _permeability_tensor;
   
   const RealVectorValue _gravity;
+
+  const bool _mass_flux; // ✅ 0826
 };

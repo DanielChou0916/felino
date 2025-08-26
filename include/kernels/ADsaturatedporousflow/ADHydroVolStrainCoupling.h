@@ -16,4 +16,5 @@ protected:
   const ADMaterialProperty<Real> & _fluid_density;
   const ADMaterialProperty<Real> & _biot_coefficient;
   const ADMaterialProperty<Real> &  _vol_strain_rate;
+  const bool _mass_flux; // ✅ 0826
 };

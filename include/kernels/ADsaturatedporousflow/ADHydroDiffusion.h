@@ -24,4 +24,6 @@ protected:
   const ADMaterialProperty<Real> & _fluid_viscosity;
 
   const ADMaterialProperty<RankTwoTensor> & _permeability_tensor;
+
+  const bool _mass_flux; // ✅ 0826
 };

@@ -16,4 +16,5 @@ protected:
 
   const ADMaterialProperty<Real> & _fluid_density;
   const ADMaterialProperty<Real> & _biot_modulus;
+  const bool _mass_flux; // ✅ 0826
 };
