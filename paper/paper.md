@@ -65,6 +65,16 @@ At present, Felino focuses on (nonlinear) elasticity-based formulations and does
 # Research impact statement
 Felino provides documented, executable benchmark cases and validation-style examples for geomaterial phase-field fracture, including uniaxial compression on composite/heterogeneous configurations. These examples are intended to serve as reproducible starting points for researchers developing new constitutive splits or crack-driving-force terms, and for engineers seeking transparent, scriptable workflows for parametric studies. By packaging the geomaterial formulations as reusable objects within the MOOSE ecosystem, Felino supports reuse in broader multiphysics settings and facilitates extension to additional constitutive families in future work.
 
+# Benchmark examples
+This section provides cookbook-style example cases that demonstrate how Felino can be applied to representative fracture and fatigue scenarios. Each example page includes a brief description of the purpose, required inputs, expected outputs, and a quick-start command to run the case.
+
+1. [Single Edge-Notch Tension (SENT) fatigue analysis](https://danielchou0916.github.io/felino.github.io/tutorials/1_sent_cyclic_pulling/)
+2. [Fatigue behavior under thermal shock](https://danielchou0916.github.io/felino.github.io/tutorials/2_thermal_shock_metal/)
+3. [Asymmetric three-point bending fatigue test](https://danielchou0916.github.io/felino.github.io/tutorials/3_3D_anisotropic_bending/)
+4. [Uniaxial compression on composite material](https://danielchou0916.github.io/felino.github.io/tutorials/4_composite_uc2D/)
+
+
+
 # AI usage disclosure
 Generative AI tools were used to assist with English language editing of the manuscript. All technical content, claims, and citations were written and verified by the authors.
 
