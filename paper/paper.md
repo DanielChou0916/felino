@@ -37,6 +37,7 @@ Phase-field fracture models have been increasingly used to study fatigue and fra
 3. **Extra Driving Force Formulation** – introduces an additional compressive–shear resistance term in the phase-field evolution equation [@liu2025emergence].
 
 Details of each model: [Tension-Compression Asymmetry](https://danielchou0916.github.io/felino.github.io/technical_contents/decomposition/)
+
 Details of programming objects: [(AD)LinearElasticPFFractureStress and (AD)ComputePFFStress](https://danielchou0916.github.io/felino.github.io/feature_objects/crack_stress/)
 
 
