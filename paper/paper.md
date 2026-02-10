@@ -30,14 +30,27 @@ The extension introduces constitutive models for geomaterials, enabling simulati
 
 
 # Statement of need
-Phase-field fracture models have been widely used in metallic fatigue simulations. However, geomaterials exhibit asymmetric mechanical behavior, especially under compressive-shear loading, which requires more advanced energy-splitting formulations. This updated version implements three constitutive models that capture this asymmetry:
+Phase-field fracture models have been increasingly used to study fatigue and fracture in metals and other solids due to their ability to represent complex crack patterns without explicit tracking [@li2023review] [@kalina2023overview]. However, geomaterials often exhibit strong tension–compression asymmetry and pressure-dependent failure, especially under compressive–shear loading, which motivates specialized energy-splitting and crack-driving-force formulations. This release extends Felino with three constitutive options targeting such asymmetry:
 
-1. **Representative Crack Element (RCE)** – interpolates between intact and cracked states using strain jump projections[@storm2020concept].
-2. **Drucker–Prager Decomposition** – derives activated and inactivated energy parts from a pressure-dependent failure criterion[@navidtehrani2022general].
-3. **Extra Driving Force Formulation** – introduces an additional compressive-shear resistance term to the phase-field equation[@liu2025emergence].
+1. **Representative Crack Element (RCE)** – interpolates between intact and cracked states using strain jump projections [@storm2020concept].
+2. **Drucker–Prager Decomposition** – derives activated and inactivated energy parts from a pressure-dependent failure criterion [@navidtehrani2022general].
+3. **Extra Driving Force Formulation** – introduces an additional compressive–shear resistance term in the phase-field evolution equation [@liu2025emergence].
 
 Details of each model: [Tension-Compression Asymmetry](https://danielchou0916.github.io/felino.github.io/technical_contents/decomposition/)
 Details of programming objects: [(AD)LinearElasticPFFractureStress and (AD)ComputePFFStress](https://danielchou0916.github.io/felino.github.io/feature_objects/crack_stress/)
+
+
+# State of the field
+Phase-field fracture simulations are commonly performed either by (i) implementing custom weak forms in open-source finite-element toolchains (e.g., FEniCS) [@BarattaEtal2023; @ScroggsEtal2022; @BasixJoss], or (ii) using commercial multiphysics/FEA platforms where phase-field formulations are realized via user-defined PDE interfaces and/or user subroutines and user elements (e.g., COMSOL and Abaqus-based implementations) [@COMSOL; @ABSstd2009; @molnar20172d; @molnar2020open]. In parallel, the MOOSE ecosystem provides reusable infrastructure for phase-field modeling and multiphysics coupling [@permann2020moose; @kirk2006libmesh].
+
+Felino is positioned as a MOOSE-based, reproducible workflow for geomaterial fracture, focusing on tension–compression asymmetry and pressure-dependent constitutive behavior. Rather than proposing a new solver stack, Felino “builds” on the MOOSE application model to deliver (i) modular constitutive formulations implemented as reusable objects, (ii) automatic-differentiation-based residual/Jacobian consistency, and (iii) curated benchmark and validation examples that lower the barrier for both research prototyping and engineering-oriented studies.
+
+# Software design
+Felino is implemented as a MOOSE application, leveraging MOOSE’s modular kernels/material system and automatic differentiation to provide consistent residual and Jacobian evaluations for coupled mechanics–phase-field problems [@permann2020moose]. Geomaterial-specific constitutive options are exposed through input-file configuration, enabling users to switch among formulations without rewriting governing equations in code. This design prioritizes extensibility (adding new splits/driving forces as reusable objects) and reproducibility (versioned examples and documented workflows) over specialization to a narrow set of built-in material models.
+
+# Limitations
+At present, Felino focuses on (nonlinear) elasticity-based formulations and does not yet provide plasticity models. Large-scale performance benchmarking against commercial codes is also not included in this work.
+
 
 # Key features
 
@@ -49,6 +62,10 @@ Details of programming objects: [(AD)LinearElasticPFFractureStress and (AD)Compu
 
 - Fully integrated with MOOSE automatic differentiation.
 
+# Research impact statement
+Felino provides documented, executable benchmark cases and validation-style examples for geomaterial phase-field fracture, including uniaxial compression on composite/heterogeneous configurations. These examples are intended to serve as reproducible starting points for researchers developing new constitutive splits or crack-driving-force terms, and for engineers seeking transparent, scriptable workflows for parametric studies. By packaging the geomaterial formulations as reusable objects within the MOOSE ecosystem, Felino supports reuse in broader multiphysics settings and facilitates extension to additional constitutive families in future work.
 
+# AI usage disclosure
+Generative AI tools were used to assist with English language editing of the manuscript. All technical content, claims, and citations were written and verified by the authors.
 
 # References
