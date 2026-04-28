@@ -67,7 +67,7 @@ PorousFlowPermeabilityTensorFromVarPFFTempl<is_ad>::computeQpProperties()
         _k_anisotropy * _perm[_qp] + _A[_qp] * (I2 - (*_crack_direction)[_qp]);
   else // exponential
     this->_permeability_qp[_qp] =
-        _k_anisotropy * _perm[_qp] * std::exp(_A[_qp]);
+        _k_anisotropy * _perm[_qp] * std::exp(MetaPhysicL::raw_value(_A[_qp]));
 
   _perm_out[_qp]              = this->_permeability_qp[_qp];
 

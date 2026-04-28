@@ -67,7 +67,7 @@ ADAnisotropicDirector::computeQpProperties()
   {
     mooseInfo("Ensuring determinant of A = 1.");
     const ADReal detA = A.det();
-    A /= std::pow(detA, 1.0 / LIBMESH_DIM);
+    A /= std::pow(MetaPhysicL::raw_value(detA), 1.0 / LIBMESH_DIM);
   } 
   else if (_normalize_director == norm_type::factorial_norm)
   {
