@@ -20,7 +20,7 @@ ADMechanicsBiotPressure::validParams()
 ADMechanicsBiotPressure::ADMechanicsBiotPressure(const InputParameters & params)
   : ADKernel(params),
     _alpha(getADMaterialProperty<Real>(getParam<MaterialPropertyName>("biot_coef_name"))),
-    _p_eff(coupledValue("p_eff_variable")),
+    _p_eff(adCoupledValue("p_eff_variable")),
     _component(getParam<unsigned int>("component")),
     _rz(getBlockCoordSystem() == Moose::COORD_RZ)
 {
