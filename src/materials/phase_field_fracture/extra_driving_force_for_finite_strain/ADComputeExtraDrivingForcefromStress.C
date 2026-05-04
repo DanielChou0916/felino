@@ -67,7 +67,7 @@ ADComputeExtraDrivingForcefromStress::computeQpProperties()
   // Remember v=1-d
   ADReal wts = _sigma_ts[_qp]*_sigma_ts[_qp]/2/E;
   ADReal sigma_hs = (2*_sigma_ts[_qp]*_sigma_cs[_qp])/ 
-                    (3*std::max((_sigma_cs[_qp] - _sigma_ts[_qp]), 1e-9) );
+                    (3*std::max(MetaPhysicL::raw_value(_sigma_cs[_qp] - _sigma_ts[_qp]), 1e-9) );
   ADReal whs = sigma_hs*sigma_hs/2/k;
 
   ADReal beta1 = -1/sigma_hs*_delta_elp[_qp]*_gc[_qp]/8/_l[_qp]+2*whs/3/sigma_hs;
@@ -91,14 +91,14 @@ ADComputeExtraDrivingForcefromStress::computeQpProperties()
   if (_model == "finite_e")
   {
     mooseInfo("Using finite_e model");
-    _Ce[_qp] = beta2 * std::sqrt(J2) + beta1 * I1
-             + (1 / (_D[_qp] * std::sqrt(_D[_qp])))
+    _Ce[_qp] = beta2 * std::sqrt(MetaPhysicL::raw_value(J2)) + beta1 * I1
+             + (1 / (_D[_qp] * std::sqrt(MetaPhysicL::raw_value(_D[_qp]))))
              * (I1 < 0 ? 2 : 0) * (J2 * (1 + nu) / E + I1 * I1 * (1 - 2 * nu) / 6 / E);
   }
   else if (_model == "asymptotic")
   {
     mooseInfo("Using asymptotic model");
-    _Ce[_qp] = beta2 * std::sqrt(J2) + beta1 * I1;
+    _Ce[_qp] = beta2 * std::sqrt(MetaPhysicL::raw_value(J2)) + beta1 * I1;
   }
   else
   {

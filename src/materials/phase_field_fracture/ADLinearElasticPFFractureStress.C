@@ -67,8 +67,8 @@ ADLinearElasticPFFractureStress::computeStrainSpectral(ADReal & F_pos, ADReal & 
   std::vector<ADReal> epos(LIBMESH_DIM), eneg(LIBMESH_DIM);
   for (const auto i : make_range(Moose::dim))
   {
-    epos[i] = (std::abs(eigval[i]) + eigval[i]) / 2.0;
-    eneg[i] = -(std::abs(eigval[i]) - eigval[i]) / 2.0;
+    epos[i] = (std::abs(MetaPhysicL::raw_value(eigval[i])) + eigval[i]) / 2.0;
+    eneg[i] = -(std::abs(MetaPhysicL::raw_value(eigval[i])) - eigval[i]) / 2.0;
   }
 
   // Seprate positive and negative sums of all eigenvalues
@@ -76,8 +76,8 @@ ADLinearElasticPFFractureStress::computeStrainSpectral(ADReal & F_pos, ADReal & 
   for (const auto i : make_range(Moose::dim))
     etr += eigval[i];
 
-  const ADReal etrpos = (std::abs(etr) + etr) / 2.0;
-  const ADReal etrneg = -(std::abs(etr) - etr) / 2.0;
+  const ADReal etrpos = (std::abs(MetaPhysicL::raw_value(etr)) + etr) / 2.0;
+  const ADReal etrneg = -(std::abs(MetaPhysicL::raw_value(etr)) - etr) / 2.0;
 
   // Calculate the tensile (postive) and compressive (negative) parts of stress
   ADRankTwoTensor stress0pos, stress0neg;
@@ -181,7 +181,7 @@ ADLinearElasticPFFractureStress::computeStrainVolDev(ADReal & F_pos, ADReal & F_
   strain0dev = _mechanical_strain[_qp].deviatoric();
   strain0vol = _mechanical_strain[_qp] - strain0dev;
   strain0tr = _mechanical_strain[_qp].trace();
-  strain0tr_neg = std::min(strain0tr, 0.0);
+  strain0tr_neg = std::min(MetaPhysicL::raw_value(strain0tr), 0.0);
   strain0tr_pos = strain0tr - strain0tr_neg;
   stress0neg = k * strain0tr_neg * I2;
   stress0pos = _elasticity_tensor[_qp] * _mechanical_strain[_qp] - stress0neg;
@@ -230,7 +230,7 @@ ADLinearElasticPFFractureStress::computeStressDev(ADReal & F_pos, ADReal & F_neg
   ADRankFourTensor Jacobian_pos, Jacobian_neg;
   stress0dev = stress.deviatoric();
   ADReal stress0hydro = stress.trace()/LIBMESH_DIM;//should be /LIBMESH_DIM or /3??
-  ADReal stress0hydro_neg = std::min(stress0hydro, 0.0);
+  ADReal stress0hydro_neg = std::min(MetaPhysicL::raw_value(stress0hydro), 0.0);
   ADReal stress0hydro_pos = stress0hydro - stress0hydro_neg;
   // Create the positive and negative stress parts
   ADRankTwoTensor stress0pos = stress0hydro_pos * I2 + stress0dev;
@@ -295,7 +295,7 @@ ADLinearElasticPFFractureStress::computeStressRCE(ADReal & F_pos, ADReal & F_neg
     { 
       ADReal L1 = lambda/(lambda+2*mu)* _mechanical_strain[_qp].trace()
                   + 2*mu/(lambda+2*mu)* (_mechanical_strain[_qp]).doubleContraction(projections[i]);
-      Lam[i] = std::max(L1,0.0);
+      Lam[i] = std::max(MetaPhysicL::raw_value(L1),0.0);
       //if Lam[2]<0 
         //Lam[2] = 0.0;  
     }
@@ -361,7 +361,7 @@ ADLinearElasticPFFractureStress::computeStrainDruckerPrager(ADReal & F_pos, ADRe
   ADReal strain0tr = _mechanical_strain[_qp].trace();
   ADReal J2_strain  = 0.5 * strain0dev.doubleContraction(strain0dev);
   
-  ADReal J2_sqrt = std::sqrt(std::max(J2_strain, 0.0));
+  ADReal J2_sqrt = std::sqrt(std::max(MetaPhysicL::raw_value(J2_strain), 0.0));
   ADReal J2_sqrt_safe = (J2_strain < 1e-14) ? 1e-7 : J2_sqrt;
   // Stress for intact material
   ADRankTwoTensor stress0 = k * strain0tr * I2 + 2 * mu * strain0dev;
