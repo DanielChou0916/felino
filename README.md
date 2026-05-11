@@ -120,3 +120,21 @@ make -j 4
 
 📌 Official website: [Felino Website](https://danielchou0916.github.io/felino.github.io/)  
 📌 Tutorials and benchmark examples are provided under the `tutorials/` folder.
+
+## Citation
+
+If you use **Felino** in your work, please cite:
+
+> Chou, D. T. (2026). *Felino: Extension of an open-source phase-field framework to geomaterial fracture*. **Journal of Open Source Software, 11**(121), 9406. https://doi.org/10.21105/joss.09406
+
+```bibtex
+@article{chou2026felino,
+  title={Felino: Extension of an open-source phase-field framework to geomaterial fracture},
+  author={Chou, Daniel T.},
+  journal={Journal of Open Source Software},
+  volume={11},
+  number={121},
+  pages={9406},
+  year={2026},
+  doi={10.21105/joss.09406}
+}
