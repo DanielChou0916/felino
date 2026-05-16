@@ -115,8 +115,8 @@ ADComputeFatigueEnergy::computeQpProperties()
     else
     {
       current_psi = 2 * E * e_max * e_max 
-      * std::pow((1 + _R[_qp]) / 2, 2)
-      * std::pow((1 - _R[_qp]) / 2,_n[_qp]);
+      * std::pow((1 + MetaPhysicL::raw_value(_R[_qp])) / 2, 2)
+      * std::pow((1 - MetaPhysicL::raw_value(_R[_qp])) / 2,MetaPhysicL::raw_value(_n[_qp]));
     }
   }
   else if (_energy_calculation == "elastic_energy")

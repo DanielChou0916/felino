@@ -107,7 +107,7 @@ ADPFFRCEStress::computeQpProperties()
     {
       ADReal L1 = lambda/(lambda+2*mu)* _strain[_qp].trace()
                 + 2*mu/(lambda+2*mu)* (_strain[_qp]).doubleContraction(projections[i]);
-      Lam[i] = std::max(L1,0.0);
+      Lam[i] = std::max(MetaPhysicL::raw_value(L1),0.0);
     }
     else 
     {
@@ -135,7 +135,7 @@ ADPFFRCEStress::computeQpProperties()
   if (_c[_qp] < 0.85)
     _hist[_qp] = psi_act;
   else
-    _hist[_qp] = std::max(psi_act, _hist_old[_qp]);
+    _hist[_qp] = std::max(MetaPhysicL::raw_value(psi_act), MetaPhysicL::raw_value(_hist_old[_qp]));
 
   ADReal hist_variable = _hist_old[_qp];
   if (_use_current_hist)
