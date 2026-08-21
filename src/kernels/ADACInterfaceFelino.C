@@ -6,7 +6,7 @@ InputParameters
 ADACInterfaceFelino::validParams()
 {
   InputParameters params = ADKernel::validParams();
-  params.addClassDescription("Extended ACInterface Kernel including grad(kappa) term.");
+  params.addClassDescription("ADACInterface Kernel.");
   params.addParam<MaterialPropertyName>("mob_name", "L", "Mobility used in the kernel");
   params.addParam<MaterialPropertyName>("kappa_name", "kappa_op", "Interfacial parameter kappa");
   params.addCoupledVar("args", "Coupled nonlinear variables affecting mobility");

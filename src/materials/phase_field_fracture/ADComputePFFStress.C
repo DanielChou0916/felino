@@ -100,16 +100,27 @@ ADComputePFFStress::computeQpProperties()
     G0_pos = (stress0pos).doubleContraction(_strain[_qp]) / 2.0;
     G0_neg = 0.0;   
   }
+  else
+    mooseError("Unknown decomposition: ", _decomposition);
 
   // Update the history variable
-  if (G0_pos > _hist_old[_qp])
-    _hist[_qp] = G0_pos;
-  else
-    _hist[_qp] = _hist_old[_qp];
+  ADReal hist_variable;
 
-  ADReal hist_variable = _hist_old[_qp];
   if (_use_current_hist)
-    hist_variable = _hist[_qp];
+  {
+    // Current driving energy; irreversibility is enforced by bounds on d
+    _hist[_qp] = G0_pos;
+  }
+  else
+  {
+    // Traditional history-field irreversibility
+    if (G0_pos > _hist_old[_qp])
+      _hist[_qp] = G0_pos;
+    else
+      _hist[_qp] = _hist_old[_qp];
+  }
+
+  hist_variable = _hist[_qp];
 
   // Compute stress and its derivatives
   if (_I_name.empty() || !(_I) || !(_pressure))
@@ -138,4 +149,6 @@ ADComputePFFStress::computeQpProperties()
   // 2nd derivative wrt c and strain = 0.0 if we used the previous step's history varible
   if (_use_current_hist)
     _d2Fdcdstrain[_qp] = stress0pos * _dDdc[_qp];
+  else
+    _d2Fdcdstrain[_qp].zero();
 }
